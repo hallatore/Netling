@@ -59,6 +59,7 @@ namespace Netling.Client
                 {
                     Minimum = 0.0,
                     MaximumPadding = 0.1,
+                    TickStyle = TickStyle.None,
                     MajorGridlineStyle = LineStyle.Solid,
                     MinorGridlineStyle = LineStyle.Dot,
                     IsZoomEnabled = false,
