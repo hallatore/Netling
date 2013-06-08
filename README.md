@@ -8,5 +8,4 @@ Comming soon ...
 
 ###Screenshots
 
-![Client](http://i.imgur.com/pSXz2il.png)
-![Result window](http://i.imgur.com/UttFVvZ.png)
+![Client and result window](http://i.imgur.com/HZPLzce.png)
