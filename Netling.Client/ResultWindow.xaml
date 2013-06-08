@@ -51,13 +51,13 @@
             <TabItem Header="Response times">
                 <client:LineGraphControl x:Name="ResponseTimeGraph"/>
             </TabItem>
-            <TabItem Header="Urls">
+            <TabItem Header="URLs">
                 <DataGrid AutoGenerateColumns="False" x:Name="UrlSummary" BorderThickness="0" AreRowDetailsFrozen="True" CanUserResizeRows="False" RowHeaderWidth="0" IsReadOnly="True" Background="Transparent">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Avg resp" Binding="{Binding Path=ResponseTime}" Width="60" />
                         <DataGridTextColumn Header="Size (KB)" Binding="{Binding Path=Size}" Width="60" />
                         <DataGridTextColumn Header="Errors" Binding="{Binding Path=Errors}" Width="45" />
-                        <DataGridTextColumn Header="Url" Binding="{Binding Path=Url}" Width="500" />
+                        <DataGridTextColumn Header="URL" Binding="{Binding Path=Url}" Width="500" />
                     </DataGrid.Columns>
                 </DataGrid>
             </TabItem>
