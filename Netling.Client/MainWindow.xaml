@@ -16,12 +16,21 @@
         </ComboBox>
 
         <TextBlock Text="Runs" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="120,0,0,0"/>
-        <TextBox x:Name="Runs" VerticalAlignment="Top" HorizontalAlignment="Left" Width="100" Height="25" Margin="120,21,0,0" Text="10"/>
+        <ComboBox x:Name="Runs" VerticalAlignment="Top" HorizontalAlignment="Left" Width="100" Height="25" Margin="120,21,0,0">
+            <ComboBoxItem>10</ComboBoxItem>
+            <ComboBoxItem>100</ComboBoxItem>
+            <ComboBoxItem IsSelected="True">10 seconds</ComboBoxItem>
+            <ComboBoxItem>20 seconds</ComboBoxItem>
+            <ComboBoxItem>1 minute</ComboBoxItem>
+            <ComboBoxItem>10 minutes</ComboBoxItem>
+            <ComboBoxItem>1 hour</ComboBoxItem>
+            <ComboBoxItem>Unlimited</ComboBoxItem>
+        </ComboBox>
 
         <TextBlock Text="URL's" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,61,0,0"/>
         <TextBox x:Name="Urls" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,82,0,40" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
 
         <Button Content="Run" x:Name="StartButton" Background="#ff0079c5" BorderThickness="0" Foreground="White" Click="StartButton_Click" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100" Height="30"/>
-        <ProgressBar x:Name="StatusProgressbar" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Visibility="Hidden" Height="16" Margin="120,0,0,7" />
+        <ProgressBar x:Name="StatusProgressbar" VerticalAlignment="Bottom" Minimum="0" Maximum="100" HorizontalAlignment="Stretch" Visibility="Hidden" Height="16" Margin="120,0,0,7" />
     </Grid>
 </Window>

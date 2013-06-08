@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Threading;
 using Netling.Core;
 using Netling.Core.Models;
@@ -25,8 +26,47 @@ namespace Netling.Client
         {
             if (!running)
             {
+                var timeLimited = false;
+                TimeSpan duration = default(TimeSpan);
+                int runs = 0;
                 var threads = Convert.ToInt32(Threads.SelectionBoxItem);
-                var runs = Convert.ToInt32(Runs.Text);
+                var runsText = (string)((ComboBoxItem)Runs.SelectedItem).Content;
+
+                switch (runsText)
+                {
+                    case "10":
+                        runs = 10;
+                        break;
+                    case "100":
+                        runs = 100;
+                        break;
+                    case "10 seconds":
+                        duration = TimeSpan.FromSeconds(10);
+                        timeLimited = true;
+                        break;
+                    case "20 seconds":
+                        duration = TimeSpan.FromSeconds(20);
+                        timeLimited = true;
+                        break;
+                    case "1 minute":
+                        duration = TimeSpan.FromMinutes(1);
+                        timeLimited = true;
+                        break;
+                    case "10 minutes":
+                        duration = TimeSpan.FromMinutes(10);
+                        timeLimited = true;
+                        break;
+                    case "1 hour":
+                        duration = TimeSpan.FromHours(1);
+                        timeLimited = true;
+                        break;
+                    case "Unlimited":
+                        duration = TimeSpan.MaxValue;
+                        timeLimited = true;
+                        break;
+
+                }
+
                 var urls = Regex.Split(Urls.Text, "\r\n").Where(u => !string.IsNullOrWhiteSpace(u)).Select(u => u.Trim());
 
                 if (!urls.Any())
@@ -36,11 +76,16 @@ namespace Netling.Client
                 var cancellationToken = cancellationTokenSource.Token;
                 var job = new Job<UrlResult>();
 
-                StatusProgressbar.Maximum = threads * runs * urls.Count();
+                StatusProgressbar.Value = 0;
                 StatusProgressbar.Visibility = Visibility.Visible;
                 job.OnProgress += OnProgress;
 
-                task = Task.Run(() => job.ProcessUrls(threads, runs, urls, cancellationToken));
+                if (timeLimited)
+                    task = Task.Run(() => job.ProcessUrls(threads, duration, urls, cancellationToken));
+                else
+                    task = Task.Run(() => job.ProcessUrls(threads, runs, urls, cancellationToken));
+
+
                 var awaiter = task.GetAwaiter();
                 awaiter.OnCompleted(JobCompleted);
 
@@ -54,16 +99,15 @@ namespace Netling.Client
             }
         }
 
-        private async void OnProgress(int amount)
+        private void OnProgress(double amount)
         {
-            await Dispatcher.InvokeAsync(() => StatusProgressbar.Value = amount, DispatcherPriority.Background);
+            Dispatcher.InvokeAsync(() => StatusProgressbar.Value = amount, DispatcherPriority.Background);
         }
 
         private void JobCompleted()
         {
             StartButton.Content = "Run";
             StatusProgressbar.Visibility = Visibility.Hidden;
-            StatusProgressbar.Value = 0;
             cancellationTokenSource = null;
             running = false;
 

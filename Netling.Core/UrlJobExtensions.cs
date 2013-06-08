@@ -17,6 +17,12 @@ namespace Netling.Core
             return job.Process(threads, runs, () => Action(urls), cancellationToken);
         }
 
+        public static JobResult<UrlResult> ProcessUrls(this Job<UrlResult> job, int threads, TimeSpan duration, IEnumerable<string> urls, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ServicePointManager.DefaultConnectionLimit = int.MaxValue;
+            return job.Process(threads, duration, () => Action(urls), cancellationToken);
+        }
+
         private static IEnumerable<Task<UrlResult>> Action(IEnumerable<string> urls)
         {
             return urls.Select(GetResult);
