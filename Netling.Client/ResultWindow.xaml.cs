@@ -34,47 +34,21 @@ namespace Netling.Client
 
         private void LoadGraph()
         {
-            var result = Result.Results
+            //var result = Result.Results
+            //    .Where(r => !r.IsError)
+            //    .GroupBy(r => (r.StartTime.Ticks/10000 + r.ResponseTime) / 1000)
+            //    .OrderBy(r => r.Key)
+            //    .Select(r => new DataPoint(r.Key, r.Count()));
+
+            //Graph.Plot("Requests per second", result);
+
+            var i = 1;
+            var ms = Result.Results
                 .Where(r => !r.IsError)
-                .GroupBy(r => (r.StartTime.Ticks/10000 + r.ResponseTime) / 1000)
-                .OrderBy(r => r.Key)
-                .ToList();
+                .OrderByDescending(r => r.ResponseTime)
+                .Select(r => new DataPoint(i++, r.ResponseTime));
 
-            var plotModel = new PlotModel
-                {
-                    PlotMargins = new OxyThickness(0)
-                };
-
-            plotModel.Axes.Add(new LinearAxis
-                {
-                    MinimumPadding = 0.0,
-                    MaximumPadding = 0.0,
-                    IsAxisVisible = false,
-                    IsZoomEnabled = false,
-                    IsPanEnabled = false,
-                    Position = AxisPosition.Bottom
-                });
-
-            plotModel.Axes.Add(new LinearAxis
-                {
-                    Minimum = 0.0,
-                    MaximumPadding = 0.1,
-                    TickStyle = TickStyle.None,
-                    MajorGridlineStyle = LineStyle.Solid,
-                    MinorGridlineStyle = LineStyle.Dot,
-                    IsZoomEnabled = false,
-                    IsPanEnabled = false
-                });
-
-            var ls = new LineSeries(OxyColor.Parse("#ff0079c5"));
-
-            foreach (var item in result)
-            {
-                ls.Points.Add(new DataPoint(item.Key, item.Count()));
-            }
-
-            plotModel.Series.Add(ls);
-            RequestsPerSecondGraph.Model = plotModel;
+            Graph.Plot("Responstime", ms);
         }
 
         private void LoadUrlSummary()
