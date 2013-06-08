@@ -1,26 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Collections.Generic;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
 
 namespace Netling.Client
 {
-    /// <summary>
-    /// Interaction logic for LineGraphControl.xaml
-    /// </summary>
     public partial class LineGraphControl : UserControl
     {
         public LineGraphControl()
@@ -28,20 +13,19 @@ namespace Netling.Client
             InitializeComponent();
         }
 
-        public void Plot(string title, IEnumerable<DataPoint> points)
+        public void Draw(IEnumerable<DataPoint> points)
         {
-            Title.Text = title;
-
             var plotModel = new PlotModel
             {
                 PlotMargins = new OxyThickness(0),
-                AutoAdjustPlotMargins = false
+                AutoAdjustPlotMargins = false, 
+                PlotAreaBorderThickness = 0
             };
 
             plotModel.Axes.Add(new LinearAxis
             {
-                MinimumPadding = 0.0,
-                MaximumPadding = 0.0,
+                MinimumPadding = 0.01,
+                MaximumPadding = 0.01,
                 IsAxisVisible = false,
                 IsZoomEnabled = false,
                 IsPanEnabled = false,

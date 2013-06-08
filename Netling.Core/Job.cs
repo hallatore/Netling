@@ -73,7 +73,7 @@ namespace Netling.Core
 
             WaitHandle.WaitAll(events.ToArray());
 
-            return new JobResult<T>(threads, runs, sw.Elapsed.TotalMilliseconds, results.SelectMany(r => r, (a, b) => b).ToList());
+            return new JobResult<T>(threads, sw.Elapsed.TotalMilliseconds, results.SelectMany(r => r, (a, b) => b).ToList());
         }
     }
 }

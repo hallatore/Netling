@@ -5,7 +5,7 @@
     <Grid Margin="10">
         <TextBlock Text="Threads" VerticalAlignment="Top" HorizontalAlignment="Left"/>
 
-        <ComboBox x:Name="Threads" VerticalAlignment="Top" HorizontalAlignment="Left" Width="100" Height="25" Margin="0,21,0,0">
+        <ComboBox x:Name="Threads" VerticalAlignment="Top" HorizontalAlignment="Left" Width="60" Height="25" Margin="0,21,0,0">
             <ComboBoxItem IsSelected="True">1</ComboBoxItem>
             <ComboBoxItem>2</ComboBoxItem>
             <ComboBoxItem>4</ComboBoxItem>
@@ -15,19 +15,20 @@
             <ComboBoxItem>64</ComboBoxItem>
         </ComboBox>
 
-        <TextBlock Text="Runs" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="120,0,0,0"/>
-        <ComboBox x:Name="Runs" VerticalAlignment="Top" HorizontalAlignment="Left" Width="100" Height="25" Margin="120,21,0,0">
-            <ComboBoxItem>10</ComboBoxItem>
-            <ComboBoxItem>100</ComboBoxItem>
+        <TextBlock Text="Duration" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="80,0,0,0"/>
+        <ComboBox x:Name="Duration" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120" Height="25" Margin="80,21,0,0">
+            <ComboBoxItem>1 run</ComboBoxItem>
+            <ComboBoxItem>10 runs</ComboBoxItem>
+            <ComboBoxItem>100 runs</ComboBoxItem>
             <ComboBoxItem IsSelected="True">10 seconds</ComboBoxItem>
             <ComboBoxItem>20 seconds</ComboBoxItem>
             <ComboBoxItem>1 minute</ComboBoxItem>
             <ComboBoxItem>10 minutes</ComboBoxItem>
             <ComboBoxItem>1 hour</ComboBoxItem>
-            <ComboBoxItem>Unlimited</ComboBoxItem>
+            <ComboBoxItem>Until canceled</ComboBoxItem>
         </ComboBox>
 
-        <TextBlock Text="URL's" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,61,0,0"/>
+        <TextBlock Text="URLs" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,61,0,0"/>
         <TextBox x:Name="Urls" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,82,0,40" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
 
         <Button Content="Run" x:Name="StartButton" Background="#ff0079c5" BorderThickness="0" Foreground="White" Click="StartButton_Click" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100" Height="30"/>

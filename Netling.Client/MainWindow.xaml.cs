@@ -30,14 +30,18 @@ namespace Netling.Client
                 TimeSpan duration = default(TimeSpan);
                 int runs = 0;
                 var threads = Convert.ToInt32(Threads.SelectionBoxItem);
-                var runsText = (string)((ComboBoxItem)Runs.SelectedItem).Content;
+                var durationText = (string)((ComboBoxItem)Duration.SelectedItem).Content;
+                StatusProgressbar.IsIndeterminate = false;
 
-                switch (runsText)
+                switch (durationText)
                 {
-                    case "10":
+                    case "1 run":
+                        runs = 1;
+                        break;
+                    case "10 runs":
                         runs = 10;
                         break;
-                    case "100":
+                    case "100 runs":
                         runs = 100;
                         break;
                     case "10 seconds":
@@ -60,9 +64,10 @@ namespace Netling.Client
                         duration = TimeSpan.FromHours(1);
                         timeLimited = true;
                         break;
-                    case "Unlimited":
+                    case "Until canceled":
                         duration = TimeSpan.MaxValue;
                         timeLimited = true;
+                        StatusProgressbar.IsIndeterminate = true;
                         break;
 
                 }
@@ -71,6 +76,10 @@ namespace Netling.Client
 
                 if (!urls.Any())
                     return;
+
+                Threads.IsEnabled = false;
+                Duration.IsEnabled = false;
+                Urls.IsEnabled = false;
 
                 cancellationTokenSource = new CancellationTokenSource();
                 var cancellationToken = cancellationTokenSource.Token;
@@ -106,6 +115,9 @@ namespace Netling.Client
 
         private void JobCompleted()
         {
+            Threads.IsEnabled = true;
+            Duration.IsEnabled = true;
+            Urls.IsEnabled = true;
             StartButton.Content = "Run";
             StatusProgressbar.Visibility = Visibility.Hidden;
             cancellationTokenSource = null;
