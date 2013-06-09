@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Netling.Client.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Netling" MinHeight="260" MinWidth="250" Width="600" Height="300">
+        Title="Netling" MinHeight="260" MinWidth="250" Width="500" Height="300">
     <Grid Margin="10">
         <TextBlock Text="Threads" VerticalAlignment="Top" HorizontalAlignment="Left"/>
 
