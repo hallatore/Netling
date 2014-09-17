@@ -2,7 +2,7 @@ using System;
 
 namespace Netling.Core.Models
 {
-    public class UrlResult : IResult
+    public struct UrlResult : IResult
     {
         public long Bytes { get; private set; }
         public bool IsError { get; private set; }
@@ -12,7 +12,7 @@ namespace Netling.Core.Models
         public string Url { get; private set; }
         public int ThreadId { get; private set; }
 
-        public UrlResult(int responseTime, long length, DateTime startTime, string url, int threadId)
+        public UrlResult(int responseTime, long length, DateTime startTime, string url, int threadId) : this()
         {
             ResponseTime = responseTime;
             Bytes = length;
@@ -21,7 +21,7 @@ namespace Netling.Core.Models
             ThreadId = threadId;
         }
 
-        public UrlResult(DateTime startTime, string url)
+        public UrlResult(DateTime startTime, string url) : this()
         {
             IsError = true;
             StartTime = startTime;

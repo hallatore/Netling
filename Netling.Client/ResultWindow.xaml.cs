@@ -36,9 +36,14 @@ namespace Netling.Client
 
         private void LoadGraphs()
         {
+            long startTime = 0;
+
+            if (Result.Results.Any())
+                startTime = Result.Results.First().StartTime.Ticks;
+
             var result = Result.Results
                 .Where(r => !r.IsError)
-                .GroupBy(r => (r.StartTime.Ticks / 10000 + r.ResponseTime) / 1000)
+                .GroupBy(r => ((r.StartTime.Ticks - startTime) / 10000 + r.ResponseTime) / 1000)
                 .OrderBy(r => r.Key)
                 .Select(r => new DataPoint(r.Key, r.Count()));
 

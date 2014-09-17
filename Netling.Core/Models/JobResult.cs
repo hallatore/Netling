@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Netling.Core.Models
 {
-    public class JobResult<T> where T : IResult
+    public struct JobResult<T> where T : IResult
     {
         public int Threads { get; private set; }
         public int Count { get; private set; }
@@ -13,7 +13,7 @@ namespace Netling.Core.Models
         public double BytesPrSecond { get; private set; }
         public double JobsPerSecond { get; private set; }
 
-        public JobResult(int threads, double elapsedMilliseconds, List<T> results)
+        public JobResult(int threads, double elapsedMilliseconds, List<T> results) : this()
         {
             Threads = threads;
             ElapsedMilliseconds = elapsedMilliseconds;
