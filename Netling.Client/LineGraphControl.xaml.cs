@@ -18,8 +18,7 @@ namespace Netling.Client
             var plotModel = new PlotModel
             {
                 PlotMargins = new OxyThickness(0),
-                AutoAdjustPlotMargins = false, 
-                PlotAreaBorderThickness = 0
+                PlotAreaBorderThickness = new OxyThickness(0)
             };
 
             plotModel.Axes.Add(new LinearAxis

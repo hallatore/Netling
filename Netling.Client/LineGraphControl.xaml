@@ -7,6 +7,6 @@
              mc:Ignorable="d" 
              d:DesignHeight="200" d:DesignWidth="300">
     <Grid>
-        <oxy:Plot x:Name="Graph" Background="Transparent" Margin="30, -1, -8, 0"></oxy:Plot>
+        <oxy:PlotView x:Name="Graph" Background="Transparent" Margin="30, -1, -8, 0"></oxy:PlotView>
     </Grid>
 </UserControl>

@@ -6,17 +6,15 @@
         <TextBlock Text="Threads" VerticalAlignment="Top" HorizontalAlignment="Left"/>
 
         <ComboBox x:Name="Threads" VerticalAlignment="Top" HorizontalAlignment="Left" Width="60" Height="25" Margin="0,21,0,0">
-            <ComboBoxItem IsSelected="True">1</ComboBoxItem>
+            <ComboBoxItem>1</ComboBoxItem>
             <ComboBoxItem>2</ComboBoxItem>
-            <ComboBoxItem>5</ComboBoxItem>
-            <ComboBoxItem>10</ComboBoxItem>
-            <ComboBoxItem>25</ComboBoxItem>
-            <ComboBoxItem>50</ComboBoxItem>
-            <ComboBoxItem>100</ComboBoxItem>
-            <ComboBoxItem>200</ComboBoxItem>
-            <ComboBoxItem>500</ComboBoxItem>
-            <ComboBoxItem>1000</ComboBoxItem>
-            <ComboBoxItem>5000</ComboBoxItem>
+            <ComboBoxItem>4</ComboBoxItem>
+            <ComboBoxItem>8</ComboBoxItem>
+            <ComboBoxItem IsSelected="True">16</ComboBoxItem>
+            <ComboBoxItem>32</ComboBoxItem>
+            <ComboBoxItem>64</ComboBoxItem>
+            <ComboBoxItem>128</ComboBoxItem>
+            <ComboBoxItem>256</ComboBoxItem>
         </ComboBox>
 
         <TextBlock Text="Duration" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="80,0,0,0"/>
