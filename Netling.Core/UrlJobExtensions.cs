@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -52,7 +53,7 @@ namespace Netling.Core
                     return new UrlResult(startTime, url);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new UrlResult(startTime, url);
             }
