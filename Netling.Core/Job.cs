@@ -14,17 +14,17 @@ namespace Netling.Core
         public delegate void ProgressEventHandler(double value);
         public ProgressEventHandler OnProgress { get; set; }
 
-        public JobResult<T> Process(int threads, TimeSpan duration, Func<IEnumerable<Task<T>>> processAction, CancellationToken cancellationToken = default(CancellationToken))
+        public JobResult<T> Process(int threads, TimeSpan duration, Func<int, IEnumerable<Task<T>>> processAction, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Process(threads, int.MaxValue, duration, processAction, cancellationToken);
         }
 
-        public JobResult<T> Process(int threads, int runs, Func<IEnumerable<Task<T>>> processAction, CancellationToken cancellationToken = default(CancellationToken))
+        public JobResult<T> Process(int threads, int runs, Func<int, IEnumerable<Task<T>>> processAction, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Process(threads, runs, TimeSpan.MaxValue, processAction, cancellationToken);
         }
 
-        private JobResult<T> Process(int threads, int runs, TimeSpan duration, Func<IEnumerable<Task<T>>> processAction, CancellationToken cancellationToken = default(CancellationToken))
+        private JobResult<T> Process(int threads, int runs, TimeSpan duration, Func<int, IEnumerable<Task<T>>> processAction, CancellationToken cancellationToken = default(CancellationToken))
         {
             ThreadPool.SetMinThreads(int.MaxValue, int.MaxValue);
 
@@ -42,11 +42,9 @@ namespace Netling.Core
                         var index = (int)state;
                         var result = new List<T>();
 
-                        Debug.WriteLine(index);
-
                         for (int j = 0; j < runs; j++)
                         {
-                            foreach (var actionResult in processAction.Invoke())
+                            foreach (var actionResult in processAction.Invoke(index))
                             {
                                 var tmp = await actionResult;
 
