@@ -7,7 +7,6 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Netling.Core.Models;
-using System.Collections.Concurrent;
 
 namespace Netling.Core
 {
@@ -74,7 +73,7 @@ namespace Netling.Core
                 var bytes = client.DownloadData(url);
                 return Task.FromResult(new UrlResult((double)sw.ElapsedTicks / Stopwatch.Frequency * 1000, bytes.Length, startTime, url, Thread.CurrentThread.ManagedThreadId));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return Task.FromResult(new UrlResult(startTime, url));
             }

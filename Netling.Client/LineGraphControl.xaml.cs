@@ -42,7 +42,7 @@ namespace Netling.Client
                 IsPanEnabled = false
             });
 
-            var ls = new LineSeries(OxyColor.Parse("#ff0079c5"));
+            var ls = new LineSeries {Color = OxyColor.Parse("#ff0079c5")};
 
             foreach (var point in points)
             {
