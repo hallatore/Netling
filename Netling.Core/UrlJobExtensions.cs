@@ -62,7 +62,7 @@ namespace Netling.Core
             return urls.Select((u) => { return GetResult(u, client); });
         }
 
-        private static Task<UrlResult> GetResult(string url, WebClient client)
+        private static async Task<UrlResult> GetResult(string url, WebClient client)
         {
             var startTime = DateTime.Now;
 
@@ -70,12 +70,12 @@ namespace Netling.Core
             {
                 var sw = new Stopwatch();
                 sw.Start();
-                var bytes = client.DownloadData(url);
-                return Task.FromResult(new UrlResult((double)sw.ElapsedTicks / Stopwatch.Frequency * 1000, bytes.Length, startTime, url, Thread.CurrentThread.ManagedThreadId));
+                var bytes = await client.DownloadDataTaskAsync(url);
+                return new UrlResult((double)sw.ElapsedTicks / Stopwatch.Frequency * 1000, bytes.Length, startTime, url, Thread.CurrentThread.ManagedThreadId);
             }
             catch (Exception)
             {
-                return Task.FromResult(new UrlResult(startTime, url));
+                return new UrlResult(startTime, url);
             }
         }
     }
