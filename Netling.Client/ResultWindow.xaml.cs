@@ -44,6 +44,7 @@ namespace Netling.Client
         private void LoadGraphs()
         {
             long startTime = 0;
+            var max = (int)Math.Floor(Result.ElapsedMilliseconds / 1000);
 
             if (Result.Results.Any())
                 startTime = Result.Results.First().StartTime.Ticks;
@@ -51,6 +52,7 @@ namespace Netling.Client
             var result = Result.Results
                 .Where(r => !r.IsError)
                 .GroupBy(r => ((r.StartTime.Ticks - startTime) / 10000 + (int)r.ResponseTime) / 1000)
+                .Where(r => r.Key < max)
                 .OrderBy(r => r.Key)
                 .Select(r => new DataPoint(r.Key, r.Count()));
 
