@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,6 +21,9 @@ namespace Netling.Client
         public MainWindow()
         {
             InitializeComponent();
+
+            ServicePointManager.UseNagleAlgorithm = false;
+            ServicePointManager.DefaultConnectionLimit = 1000;
         }
 
         private void StartButton_Click(object sender, RoutedEventArgs e)

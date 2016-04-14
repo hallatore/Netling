@@ -58,7 +58,7 @@ namespace Netling.Core
                                 result.Add(tmp);
                                 totalRuntime = sw.Elapsed.TotalMilliseconds;
 
-                                if (index == 0 && OnProgress != null)
+                                if (index == 0 && j % 1000 == 0 && OnProgress != null)
                                 {
                                     if (duration == TimeSpan.MaxValue)
                                         OnProgress(100.0/runs*(j + 1));
