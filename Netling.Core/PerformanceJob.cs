@@ -2,18 +2,14 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Runtime;
 using System.Threading;
-using System.Threading.Tasks;
 using Netling.Core.Models;
+using Netling.Core.Performance;
 
 namespace Netling.Core
 {
-    public class Job : IJob
+    public class PerformanceJob : IJob
     {
         public JobResult Process(int threads, TimeSpan duration, string url, CancellationToken cancellationToken)
         {
@@ -28,10 +24,11 @@ namespace Netling.Core
             for (var i = 0; i < threads; i++)
             {
                 var resetEvent = new ManualResetEvent(false);
-                ThreadPool.QueueUserWorkItem(async (state) =>
+                ThreadPool.QueueUserWorkItem((state) =>
                     {
                         var result = new List<UrlResult>();
                         var sw2 = new Stopwatch();
+                        var worker = new HttpWorker(url);
 
                         while (!cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.ElapsedMilliseconds)
                         {
@@ -39,20 +36,11 @@ namespace Netling.Core
 
                             try
                             {
-                                var request = WebRequest.CreateHttp(url);
-                                request.Headers[HttpRequestHeader.AcceptEncoding] = "gzip,deflate,sdch";
-
-                                using (var response = await request.GetResponseAsync().ConfigureAwait(false))
-                                using (var stream = response.GetResponseStream())
-                                using (var ms = new MemoryStream())
-                                {
-                                    await stream.CopyToAsync(ms).ConfigureAwait(false);
-                                    sw2.Stop();
-                                    var tmp = new UrlResult(sw.Elapsed.TotalMilliseconds, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, ms.Length);
-                                    result.Add(tmp);
-                                }
+                                var length = worker.Get();
+                                var tmp = new UrlResult(sw.Elapsed.TotalMilliseconds, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, length);
+                                result.Add(tmp);
                             }
-                            catch (Exception)
+                            catch (Exception ex)
                             {
                                 result.Add(new UrlResult(sw.Elapsed.TotalMilliseconds));
                             }

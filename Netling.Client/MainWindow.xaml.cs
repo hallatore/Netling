@@ -72,7 +72,7 @@ namespace Netling.Client
 
                 _cancellationTokenSource = new CancellationTokenSource();
                 var cancellationToken = _cancellationTokenSource.Token;
-                var job = new Job();
+                var job = new PerformanceJob();
 
                 StatusProgressbar.Value = 0;
                 StatusProgressbar.Visibility = Visibility.Visible;
