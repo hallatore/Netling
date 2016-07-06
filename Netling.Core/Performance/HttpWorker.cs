@@ -28,10 +28,13 @@ namespace Netling.Core.Performance
         {
             InitClient();
             var stream = HttpHelper.GetStream(_client, _uri);
-
             stream.Write(_request, 0, _request.Length);
             stream.Flush();
+            return GetLength();
+        }
 
+        private int GetLength()
+        {
             const int bufferSize = 4096;
             var buffer = new byte[bufferSize];
             var length = 0;
