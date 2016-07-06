@@ -27,6 +27,19 @@
             <ComboBoxItem>Until canceled</ComboBoxItem>
         </ComboBox>
 
+        <TextBlock Text="Pipelining" VerticalAlignment="Top" HorizontalAlignment="Right"/>
+        <ComboBox x:Name="Pipelining" VerticalAlignment="Top" HorizontalAlignment="Right" Width="60" Height="25" Margin="0,21,0,0">
+            <ComboBoxItem IsSelected="True">1</ComboBoxItem>
+            <ComboBoxItem>2</ComboBoxItem>
+            <ComboBoxItem>4</ComboBoxItem>
+            <ComboBoxItem>8</ComboBoxItem>
+            <ComboBoxItem>16</ComboBoxItem>
+            <ComboBoxItem>32</ComboBoxItem>
+            <ComboBoxItem>64</ComboBoxItem>
+            <ComboBoxItem>128</ComboBoxItem>
+            <ComboBoxItem>256</ComboBoxItem>
+        </ComboBox>
+
         <TextBlock Text="URL" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,61,0,0"/>
         <TextBox x:Name="Urls" VerticalAlignment="Stretch" KeyUp="Urls_OnKeyUp" HorizontalAlignment="Stretch" Padding="6" Margin="0,82,0,40" />
 

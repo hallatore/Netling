@@ -35,6 +35,8 @@ namespace Netling.Client
                 var duration = default(TimeSpan);
                 var threads = Convert.ToInt32(Threads.SelectionBoxItem);
                 var durationText = (string)((ComboBoxItem)Duration.SelectedItem).Content;
+                var pipelining = Convert.ToInt32(Pipelining.SelectionBoxItem);
+
                 StatusProgressbar.IsIndeterminate = false;
 
                 switch (durationText)
@@ -69,6 +71,7 @@ namespace Netling.Client
                 Threads.IsEnabled = false;
                 Duration.IsEnabled = false;
                 Urls.IsEnabled = false;
+                Pipelining.IsEnabled = false;
 
                 _cancellationTokenSource = new CancellationTokenSource();
                 var cancellationToken = _cancellationTokenSource.Token;
@@ -77,7 +80,7 @@ namespace Netling.Client
                 StatusProgressbar.Value = 0;
                 StatusProgressbar.Visibility = Visibility.Visible;
                 
-                _task = Task.Factory.StartNew(() => job.Process(threads, duration, url, cancellationToken), TaskCreationOptions.LongRunning);
+                _task = Task.Factory.StartNew(() => job.Process(threads, duration, url, pipelining, cancellationToken), TaskCreationOptions.LongRunning).Unwrap();
                 _task.GetAwaiter().OnCompleted(JobCompleted);
 
                 StartButton.Content = "Cancel";
@@ -121,6 +124,7 @@ namespace Netling.Client
             Threads.IsEnabled = true;
             Duration.IsEnabled = true;
             Urls.IsEnabled = true;
+            Pipelining.IsEnabled = true;
             StartButton.Content = "Run";
             StatusProgressbar.Visibility = Visibility.Hidden;
             _cancellationTokenSource = null;

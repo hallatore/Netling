@@ -15,65 +15,81 @@ namespace Netling.Core
 {
     public class Job
     {
-        public JobResult Process(int threads, TimeSpan duration, string url, CancellationToken cancellationToken)
+        public async Task<JobResult> Process(int threads, TimeSpan duration, string url, int pipelining, CancellationToken cancellationToken)
         {
             ThreadPool.SetMinThreads(int.MaxValue, int.MaxValue);
 
-            var results = new ConcurrentQueue<List<UrlResult>>();
-            var events = new List<ManualResetEvent>();
+            var results = new Queue<List<UrlResult>>(threads);
+            var requests = new List<Task>(threads);
             var sw = new Stopwatch();
             sw.Start();
             var totalRuntime = 0.0;
 
             for (var i = 0; i < threads; i++)
             {
-                var resetEvent = new ManualResetEvent(false);
-                ThreadPool.QueueUserWorkItem(async (state) =>
-                    {
-                        var result = new List<UrlResult>();
-                        var sw2 = new Stopwatch();
+                var result = new List<UrlResult>();
+                results.Enqueue(result);
 
-                        while (!cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.ElapsedMilliseconds)
-                        {
-                            sw2.Restart();
+                var request = SubmitRequests(duration, url, pipelining, sw, result, cancellationToken);
+                requests.Add(request);
 
-                            try
-                            {
-                                var request = WebRequest.CreateHttp(url);
-                                request.Headers[HttpRequestHeader.AcceptEncoding] = "gzip,deflate,sdch";
-
-                                using (var response = await request.GetResponseAsync().ConfigureAwait(false))
-                                using (var stream = response.GetResponseStream())
-                                using (var ms = new MemoryStream())
-                                {
-                                    await stream.CopyToAsync(ms).ConfigureAwait(false);
-                                    sw2.Stop();
-                                    var tmp = new UrlResult(sw.Elapsed.TotalMilliseconds, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, ms.Length);
-                                    result.Add(tmp);
-                                }
-                            }
-                            catch (Exception)
-                            {
-                                result.Add(new UrlResult(sw.Elapsed.TotalMilliseconds));
-                            }
-                        }
-
-                        results.Enqueue(result);
-                        resetEvent.Set();
-                        totalRuntime = sw.Elapsed.TotalMilliseconds;
-                    }, i);
-
-                events.Add(resetEvent);
             }
 
-            for (var i = 0; i < events.Count; i += 50)
-            {
-                var group = events.Skip(i).Take(50).ToArray();
-                WaitHandle.WaitAll(group);
-            }
+            await Task.WhenAll(requests.ToArray()).ConfigureAwait(false);
+
+            totalRuntime = sw.Elapsed.TotalMilliseconds;
 
             var finalResults = results.SelectMany(r => r, (a, b) => b).ToList();
             return new JobResult(threads, totalRuntime, finalResults);
+        }
+
+        private static async Task SubmitRequests(TimeSpan duration, string url, int pipelining, Stopwatch sw, List<UrlResult> result, CancellationToken cancellationToken)
+        {
+            var sw2 = new Stopwatch();
+            var tasks = new List<Task<UrlResult>>(pipelining);
+
+            var webRequestHandler = new WebRequestHandler();
+            webRequestHandler.UseDefaultCredentials = true;
+            webRequestHandler.AllowPipelining = true;
+
+            using (var client = new HttpClient(webRequestHandler))
+            {
+                client.DefaultRequestHeaders.TryAddWithoutValidation("Accept-Encoding", "gzip,deflate,sdch");
+
+                while (!cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.ElapsedMilliseconds)
+                {
+                    tasks.Clear();
+                    sw2.Restart();
+
+                    for (var i = 0; i < pipelining; i++)
+                    {
+                        tasks.Add(SubmitRequests(url, sw, result, sw2, client));
+                    }
+
+                    await Task.WhenAll(tasks.ToArray()).ConfigureAwait(false);
+
+                    foreach (var task in tasks)
+                    {
+                        result.Add(task.Result);
+                    }
+                }
+            }
+        }
+
+        private static async Task<UrlResult> SubmitRequests(string url, Stopwatch sw, List<UrlResult> result, Stopwatch sw2, HttpClient client)
+        {
+            try
+            {
+                using (var response = await client.GetAsync(url).ConfigureAwait(false))
+                {
+                    var elapsed = sw.Elapsed;
+                    return new UrlResult(elapsed.TotalMilliseconds, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, response.Content.Headers.ContentLength.Value);
+                }
+            }
+            catch (Exception)
+            {
+               return new UrlResult(sw.Elapsed.TotalMilliseconds);
+            }
         }
     }
 }
