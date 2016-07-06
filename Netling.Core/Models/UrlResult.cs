@@ -1,31 +1,23 @@
-using System;
-
 namespace Netling.Core.Models
 {
-    public struct UrlResult : IResult
+    public class UrlResult
     {
         public long Bytes { get; private set; }
         public bool IsError { get; private set; }
-
         public double ResponseTime { get; private set; }
-        public DateTime StartTime { get; private set; }
-        public string Url { get; private set; }
-        public int ThreadId { get; private set; }
+        public double Elapsed { get; private set; }
 
-        public UrlResult(double responseTime, long length, DateTime startTime, string url, int threadId) : this()
+        public UrlResult(double elapsed, double responseTime, long length)
         {
-            ResponseTime = responseTime;
             Bytes = length;
-            StartTime = startTime;
-            Url = url;
-            ThreadId = threadId;
+            ResponseTime = responseTime;
+            Elapsed = elapsed;
         }
 
-        public UrlResult(DateTime startTime, string url) : this()
+        public UrlResult(double elapsed)
         {
             IsError = true;
-            StartTime = startTime;
-            Url = url;
+            Elapsed = elapsed;
         }
     }
 }

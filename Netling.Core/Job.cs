@@ -2,87 +2,78 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Runtime;
 using System.Threading;
 using System.Threading.Tasks;
 using Netling.Core.Models;
 
 namespace Netling.Core
 {
-    public class Job<T> where T : IResult
+    public class Job
     {
-        public delegate void ProgressEventHandler(double value);
-        public ProgressEventHandler OnProgress { get; set; }
-
-        public JobResult<T> Process(int threads, TimeSpan duration, Func<int, IEnumerable<Task<T>>> processAction, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            return Process(threads, int.MaxValue, duration, processAction, cancellationToken);
-        }
-
-        public JobResult<T> Process(int threads, int runs, Func<int, IEnumerable<Task<T>>> processAction, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            return Process(threads, runs, TimeSpan.MaxValue, processAction, cancellationToken);
-        }
-
-        private JobResult<T> Process(int threads, int runs, TimeSpan duration, Func<int, IEnumerable<Task<T>>> processAction, CancellationToken cancellationToken = default(CancellationToken))
+        public JobResult Process(int threads, TimeSpan duration, string url, CancellationToken cancellationToken)
         {
             ThreadPool.SetMinThreads(int.MaxValue, int.MaxValue);
 
-            var results = new ConcurrentQueue<List<T>>();
+            var results = new ConcurrentQueue<List<UrlResult>>();
             var events = new List<ManualResetEvent>();
             var sw = new Stopwatch();
             sw.Start();
             var totalRuntime = 0.0;
 
-            for (int i = 0; i < threads; i++)
+            for (var i = 0; i < threads; i++)
             {
                 var resetEvent = new ManualResetEvent(false);
                 ThreadPool.QueueUserWorkItem(async (state) =>
                     {
-                        var index = (int)state;
-                        var result = new List<T>();
+                        var result = new List<UrlResult>();
+                        var sw2 = new Stopwatch();
 
-                        for (int j = 0; j < runs; j++)
+                        while (!cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.ElapsedMilliseconds)
                         {
-                            foreach (var actionResult in processAction.Invoke(index))
+                            sw2.Restart();
+
+                            try
                             {
-                                var tmp = await actionResult;
+                                var request = WebRequest.CreateHttp(url);
+                                request.Headers[HttpRequestHeader.AcceptEncoding] = "gzip,deflate,sdch";
 
-                                if (cancellationToken.IsCancellationRequested || duration.TotalMilliseconds < sw.ElapsedMilliseconds)
+                                using (var response = await request.GetResponseAsync().ConfigureAwait(false))
+                                using (var stream = response.GetResponseStream())
+                                using (var ms = new MemoryStream())
                                 {
-                                    results.Enqueue(result);
-                                    resetEvent.Set();
-                                    return;
+                                    await stream.CopyToAsync(ms).ConfigureAwait(false);
+                                    sw2.Stop();
+                                    var tmp = new UrlResult(sw.Elapsed.TotalMilliseconds, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, ms.Length);
+                                    result.Add(tmp);
                                 }
-
-                                result.Add(tmp);
-                                totalRuntime = sw.Elapsed.TotalMilliseconds;
-
-                                if (index == 0 && j % 1000 == 0 && OnProgress != null)
-                                {
-                                    if (duration == TimeSpan.MaxValue)
-                                        OnProgress(100.0/runs*(j + 1));
-                                    else
-                                        OnProgress(100.0 / duration.TotalMilliseconds * sw.ElapsedMilliseconds);
-                                }
+                            }
+                            catch (Exception)
+                            {
+                                result.Add(new UrlResult(sw.Elapsed.TotalMilliseconds));
                             }
                         }
 
                         results.Enqueue(result);
                         resetEvent.Set();
+                        totalRuntime = sw.Elapsed.TotalMilliseconds;
                     }, i);
 
                 events.Add(resetEvent);
             }
 
-            for (int i = 0; i < events.Count; i += 50)
+            for (var i = 0; i < events.Count; i += 50)
             {
                 var group = events.Skip(i).Take(50).ToArray();
                 WaitHandle.WaitAll(group);
             }
 
             var finalResults = results.SelectMany(r => r, (a, b) => b).ToList();
-            return new JobResult<T>(threads, totalRuntime, finalResults);
+            return new JobResult(threads, totalRuntime, finalResults);
         }
     }
 }

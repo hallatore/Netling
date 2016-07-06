@@ -48,21 +48,6 @@
             <TabItem Header="Requests per second">
                 <client:LineGraphControl x:Name="RequestsPerSecondGraph"/>
             </TabItem>
-            <TabItem Header="Response times">
-                <client:LineGraphControl x:Name="ResponseTimeGraph"/>
-            </TabItem>
-            <TabItem Header="URLs">
-                <DataGrid AutoGenerateColumns="False" x:Name="UrlSummary" BorderThickness="0" AreRowDetailsFrozen="True" CanUserResizeRows="False" RowHeaderWidth="0" IsReadOnly="True" Background="Transparent">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Avg resp" Binding="{Binding Path=ResponseTime}" Width="60" />
-                        <DataGridTextColumn Header="Size (KB)" Binding="{Binding Path=Size}" Width="60" />
-                        <DataGridTextColumn Header="Errors" Binding="{Binding Path=Errors}" Width="45" />
-                        <DataGridTextColumn Header="URL" Binding="{Binding Path=Url}" Width="500" />
-                    </DataGrid.Columns>
-                </DataGrid>
-            </TabItem>
         </TabControl>
-            
-        <Button Grid.Row="2" Content="Save" Click="Button_Click" Width="100" VerticalAlignment="Bottom" Padding="10,0" HorizontalAlignment="Left" Background="#ff0079c5" BorderThickness="0" Foreground="White" Height="30"/>
     </Grid>
 </Window>
