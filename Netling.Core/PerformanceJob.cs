@@ -16,14 +16,14 @@ namespace Netling.Core
             ThreadPool.SetMinThreads(int.MaxValue, int.MaxValue);
 
             var results = new ConcurrentQueue<List<UrlResult>>();
-            var events = new List<ManualResetEvent>();
+            var events = new List<ManualResetEventSlim>();
             var sw = new Stopwatch();
             sw.Start();
             var totalRuntime = 0.0;
 
             for (var i = 0; i < threads; i++)
             {
-                var resetEvent = new ManualResetEvent(false);
+                var resetEvent = new ManualResetEventSlim(false);
                 ThreadPool.QueueUserWorkItem((state) =>
                     {
                         var result = new List<UrlResult>();
@@ -56,7 +56,7 @@ namespace Netling.Core
 
             for (var i = 0; i < events.Count; i += 50)
             {
-                var group = events.Skip(i).Take(50).ToArray();
+                var group = events.Skip(i).Take(50).Select(r => r.WaitHandle).ToArray();
                 WaitHandle.WaitAll(group);
             }
 
