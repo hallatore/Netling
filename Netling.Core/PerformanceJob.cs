@@ -11,7 +11,7 @@ namespace Netling.Core
 {
     public class PerformanceJob : IJob
     {
-        public JobResult Process(int threads, TimeSpan duration, string url, CancellationToken cancellationToken)
+        public JobResult Process(int threads, int pipelining, TimeSpan duration, string url, CancellationToken cancellationToken)
         {
             ThreadPool.SetMinThreads(int.MaxValue, int.MaxValue);
             var results = new ConcurrentQueue<List<UrlResult>>();
@@ -35,7 +35,6 @@ namespace Netling.Core
 
                             try
                             {
-                                var pipelining = 1;
                                 if (pipelining == 1)
                                 {
                                     worker.Write();

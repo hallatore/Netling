@@ -5,17 +5,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Runtime;
 using System.Threading;
-using System.Threading.Tasks;
 using Netling.Core.Models;
 
 namespace Netling.Core
 {
     public class Job : IJob
     {
-        public JobResult Process(int threads, TimeSpan duration, string url, CancellationToken cancellationToken)
+        public JobResult Process(int threads, int pipelining, TimeSpan duration, string url, CancellationToken cancellationToken)
         {
             ThreadPool.SetMinThreads(int.MaxValue, int.MaxValue);
 

@@ -2,11 +2,11 @@
 {
     public static class HttpHelperContentLength
     {
-        public static int GetContentLength(byte[] buffer, int start)
+        public static int GetHeaderContentLength(byte[] buffer, int start, int end)
         {
             int index;
             int length;
-            HttpHelper.SeekHeader(buffer, HttpHeaders.ContentLength, start, out index, out length);
+            HttpHelper.SeekHeader(buffer, HttpHeaders.ContentLength, start, end, out index, out length);
             return ConvertToInt(buffer, index, length);
         }
 
@@ -20,6 +20,18 @@
             }
 
             return result;
+        }
+
+        public static int GetResponseLength(byte[] buffer, int start, int end)
+        {
+            var headerEnd = HttpHelper.SeekHeaderEnd(buffer, start, end);
+
+            if (headerEnd < 0)
+                return -1;
+
+            var contentLength = GetHeaderContentLength(buffer, start, end);
+
+            return headerEnd - start + 4 + contentLength;
         }
     }
 }

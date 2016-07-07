@@ -4,7 +4,6 @@
         Title="Netling" MinWidth="250" Width="500" Height="210" ResizeMode="NoResize">
     <Grid Margin="10">
         <TextBlock Text="Threads" VerticalAlignment="Top" HorizontalAlignment="Left"/>
-
         <ComboBox x:Name="Threads" VerticalAlignment="Top" HorizontalAlignment="Left" Width="60" Height="25" Margin="0,21,0,0">
             <ComboBoxItem IsSelected="True">1</ComboBoxItem>
             <ComboBoxItem>2</ComboBoxItem>
@@ -25,6 +24,19 @@
             <ComboBoxItem>10 minutes</ComboBoxItem>
             <ComboBoxItem>1 hour</ComboBoxItem>
             <ComboBoxItem>Until canceled</ComboBoxItem>
+        </ComboBox>
+
+        <TextBlock Text="Pipelining" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="220,0,0,0"/>
+        <ComboBox x:Name="Pipelining" VerticalAlignment="Top" HorizontalAlignment="Left" Width="60" Height="25" Margin="220,21,0,0">
+            <ComboBoxItem IsSelected="True">1</ComboBoxItem>
+            <ComboBoxItem>2</ComboBoxItem>
+            <ComboBoxItem>4</ComboBoxItem>
+            <ComboBoxItem>8</ComboBoxItem>
+            <ComboBoxItem>16</ComboBoxItem>
+            <ComboBoxItem>32</ComboBoxItem>
+            <ComboBoxItem>64</ComboBoxItem>
+            <ComboBoxItem>128</ComboBoxItem>
+            <ComboBoxItem>256</ComboBoxItem>
         </ComboBox>
 
         <TextBlock Text="URL" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,61,0,0"/>

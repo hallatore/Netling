@@ -34,6 +34,7 @@ namespace Netling.Client
             {
                 var duration = default(TimeSpan);
                 var threads = Convert.ToInt32(Threads.SelectionBoxItem);
+                var pipelining = Convert.ToInt32(Pipelining.SelectionBoxItem);
                 var durationText = (string)((ComboBoxItem)Duration.SelectedItem).Content;
                 StatusProgressbar.IsIndeterminate = false;
 
@@ -77,7 +78,7 @@ namespace Netling.Client
                 StatusProgressbar.Value = 0;
                 StatusProgressbar.Visibility = Visibility.Visible;
                 
-                _task = Task.Factory.StartNew(() => job.Process(threads, duration, url, cancellationToken), TaskCreationOptions.LongRunning);
+                _task = Task.Factory.StartNew(() => job.Process(threads, pipelining, duration, url, cancellationToken), TaskCreationOptions.LongRunning);
                 _task.GetAwaiter().OnCompleted(JobCompleted);
 
                 StartButton.Content = "Cancel";

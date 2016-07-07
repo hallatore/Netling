@@ -15,6 +15,7 @@ namespace Netling.Core.Performance
         private TcpClient _client;
         private Stream _stream;
         private readonly byte[] _buffer;
+        private readonly byte[] _tmpBuffer;
         private int _streamIndex;
         private int _read;
         private ResponseType _responseType;
@@ -22,6 +23,7 @@ namespace Netling.Core.Performance
         public HttpWorker(string url)
         {
             _buffer = new byte[4096];
+            _tmpBuffer = new byte[_buffer.Length * 2];
             _streamIndex = 0;
             _read = 0;
             _responseType = ResponseType.Unknown;
@@ -47,11 +49,11 @@ namespace Netling.Core.Performance
         {
             var read = _client.Client.Receive(_buffer);
             var length = read;
-            _responseType = HttpHelper.GetResponseType(_buffer);
+            _responseType = HttpHelper.GetResponseType(_buffer, 0, read);
 
             if (_responseType == ResponseType.ContentLength)
             {
-                var responseLength = HttpHelper.SeekHeaderEnd(_buffer, 0) + 4 + HttpHelperContentLength.GetContentLength(_buffer, 0);
+                var responseLength = HttpHelperContentLength.GetResponseLength(_buffer, 0, read);
 
                 while (length < responseLength)
                 {
@@ -70,17 +72,28 @@ namespace Netling.Core.Performance
             return length;
         }
 
-        // experimental and not working yet ...
+        // experimental ...
         public int ReadPipelined()
         {
             if (_streamIndex == 0)
             {
                 _read = _client.Client.Receive(_buffer);
-                _responseType = HttpHelper.GetResponseType(_buffer);
+                _responseType = HttpHelper.GetResponseType(_buffer, 0, _read);
             }
 
             var length = _read - _streamIndex;
-            var responseLength = HttpHelper.SeekHeaderEnd(_buffer, _streamIndex) - _streamIndex + 4 + HttpHelperContentLength.GetContentLength(_buffer, _streamIndex);
+            var responseLength = HttpHelperContentLength.GetResponseLength(_buffer, _streamIndex, _read);
+
+            // Happens if we cut the response at a bad place ...
+            if (responseLength < 0)
+            {
+                Array.Copy(_buffer, 0, _tmpBuffer, 0, _buffer.Length);
+                var tmpRead = _read;
+                _read = _client.Client.Receive(_buffer);
+                length += _read;
+                Array.Copy(_buffer, 0, _tmpBuffer, tmpRead, _read);
+                responseLength = HttpHelperContentLength.GetResponseLength(_tmpBuffer, _streamIndex, tmpRead + _read);
+            }
 
             while (length < responseLength)
             {
@@ -89,16 +102,7 @@ namespace Netling.Core.Performance
             }
 
             var end = _read - (length - responseLength);
-
-            if (_read > end && end > 0 && HttpHelper.IsHeaderStart(_buffer, end))
-            {
-                _streamIndex = end;
-            }
-            else
-            {
-                _streamIndex = 0;
-            }
-
+            _streamIndex = _read > end ? end : 0;
             return responseLength;
         }
 
@@ -119,6 +123,7 @@ namespace Netling.Core.Performance
             }
             catch (SocketException) { }
 
+            _client.SendTimeout = 10000;
             _client.ReceiveTimeout = 10000;
             _client.Connect(_endPoint);
             _stream = HttpHelper.GetStream(_client, _uri);
