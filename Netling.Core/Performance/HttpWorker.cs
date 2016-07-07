@@ -70,7 +70,12 @@ namespace Netling.Core.Performance
 
             const int sioLoopbackFastPath = -1744830448;
             var optionInValue = BitConverter.GetBytes(1);
-            _client.Client.IOControl(sioLoopbackFastPath, optionInValue, null);
+
+            try
+            {
+                _client.Client.IOControl(sioLoopbackFastPath, optionInValue, null);
+            }
+            catch (SocketException) { }
 
             _client.ReceiveTimeout = 10000;
             _client.Connect(_endPoint);
