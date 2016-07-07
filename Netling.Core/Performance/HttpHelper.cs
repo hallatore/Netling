@@ -29,6 +29,13 @@ namespace Netling.Core.Performance
         // HTTP/1.1 200 OK\r\nDate: Wed, 06 Jul 2016 18:26:27 GMT\r\nContent-Length: 13\r\nContent-Type: text/plain\r\nServer: Kestrel\r\n\r\nHello, World!
         public static bool SeekHeader(byte[] buffer, byte[] header, int start, out int index, out int length)
         {
+            if (start + header.Length > buffer.Length)
+            {
+                index = -1;
+                length = 0;
+                return false;
+            }
+
             for (var i = 0; i < header.Length; i++)
             {
                 if (header[i] == buffer[start + i])
@@ -63,7 +70,7 @@ namespace Netling.Core.Performance
             return -1;
         }
         
-        public static int SeekDoubleReturn(byte[] buffer, int i)
+        public static int SeekHeaderEnd(byte[] buffer, int i)
         {
             while (buffer.Length > i + 3)
             {
@@ -77,6 +84,17 @@ namespace Netling.Core.Performance
             }
 
             return -1;
+        }
+
+        public static bool IsHeaderStart(byte[] buffer, int i)
+        {
+            if (i + 3 > buffer.Length)
+                return false;
+
+            return buffer[i] == 72 &&
+                   buffer[i + 1] == 84 &&
+                   buffer[i + 2] == 84 &&
+                   buffer[i + 3] == 80;
         }
 
         public static Stream GetStream(TcpClient client, Uri uri)

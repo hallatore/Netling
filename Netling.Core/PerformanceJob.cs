@@ -14,7 +14,6 @@ namespace Netling.Core
         public JobResult Process(int threads, TimeSpan duration, string url, CancellationToken cancellationToken)
         {
             ThreadPool.SetMinThreads(int.MaxValue, int.MaxValue);
-
             var results = new ConcurrentQueue<List<UrlResult>>();
             var events = new List<ManualResetEventSlim>();
             var sw = new Stopwatch();
@@ -36,9 +35,30 @@ namespace Netling.Core
 
                             try
                             {
-                                var length = worker.Get();
-                                var tmp = new UrlResult(sw.Elapsed.TotalMilliseconds, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, length);
-                                result.Add(tmp);
+                                var pipelining = 1;
+                                if (pipelining == 1)
+                                {
+                                    worker.Write();
+                                    worker.Flush();
+                                    var length = worker.Read();
+                                    var tmp = new UrlResult(sw.Elapsed.TotalMilliseconds, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, length);
+                                    result.Add(tmp);
+                                }
+                                else { 
+                                    for (var j = 0; j < pipelining; j++)
+                                    {
+                                        worker.Write();
+                                    }
+
+                                    worker.Flush();
+
+                                    for (var j = 0; j < pipelining; j++)
+                                    {
+                                        var length = worker.ReadPipelined();
+                                        var tmp = new UrlResult(sw.Elapsed.TotalMilliseconds, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, length);
+                                        result.Add(tmp);
+                                    }
+                                }
                             }
                             catch (Exception ex)
                             {

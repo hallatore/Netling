@@ -1,14 +1,12 @@
-﻿using System.Net.Sockets;
-
-namespace Netling.Core.Performance
+﻿namespace Netling.Core.Performance
 {
     public static class HttpHelperContentLength
     {
-        public static int GetContentLength(byte[] buffer)
+        public static int GetContentLength(byte[] buffer, int start)
         {
             int index;
             int length;
-            HttpHelper.SeekHeader(buffer, HttpHeaders.ContentLength, 0, out index, out length);
+            HttpHelper.SeekHeader(buffer, HttpHeaders.ContentLength, start, out index, out length);
             return ConvertToInt(buffer, index, length);
         }
 
@@ -22,18 +20,6 @@ namespace Netling.Core.Performance
             }
 
             return result;
-        }
-
-        public static int ReadContentLengthStream(TcpClient client, int length, int end)
-        {
-            var buffer = new byte[4096];
-
-            do
-            {
-                length += client.Client.Receive(buffer);
-            } while (length < end);
-
-            return length;
         }
     }
 }
