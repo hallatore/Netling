@@ -1,6 +1,4 @@
-﻿using System;
-using System.Net.Sockets;
-using System.Text;
+﻿using System.Net.Sockets;
 
 namespace Netling.Core.Performance
 {
@@ -10,21 +8,17 @@ namespace Netling.Core.Performance
         {
             int index;
             int length;
-            HttpHelper.TryGetHeaderLocation(buffer, HttpHelper.HeaderContentLength, 0, out index, out length);
-
-            var b = new byte[length];
-            Array.Copy(buffer, index, b, 0, length);
-            return ConvertToInt(b);
+            HttpHelper.SeekHeader(buffer, HttpHeaders.ContentLength, 0, out index, out length);
+            return ConvertToInt(buffer, index, length);
         }
 
-        private static int ConvertToInt(byte[] bytes)
+        private static int ConvertToInt(byte[] bytes, int start, int length)
         {
             var result = 0;
-            var length = bytes.Length;
 
             for (var i = 0; i < length; i++)
             {
-                result = result * 10 + (bytes[i] - '0');
+                result = result * 10 + (bytes[start + i] - '0');
             }
 
             return result;

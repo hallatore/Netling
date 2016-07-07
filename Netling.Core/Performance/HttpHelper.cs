@@ -10,35 +10,34 @@ namespace Netling.Core.Performance
 {
     public static class HttpHelper
     {
-        public static readonly byte[] HeaderContentLength = Encoding.UTF8.GetBytes("Content-Length: ");
-        public static readonly byte[] HeaderTransferEncoding = Encoding.UTF8.GetBytes("Transfer-Encoding: ");
+        
 
         public static ResponseType GetResponseType(byte[] buffer)
         {
             int index;
             int length;
 
-            if (TryGetHeaderLocation(buffer, HeaderContentLength, 0, out index, out length))
+            if (SeekHeader(buffer, HttpHeaders.ContentLength, 0, out index, out length))
                 return ResponseType.ContentLength;
 
-            if (TryGetHeaderLocation(buffer, HeaderTransferEncoding, 0, out index, out length))
+            if (SeekHeader(buffer, HttpHeaders.TransferEncoding, 0, out index, out length))
                 return ResponseType.Chunked;
 
             return ResponseType.Unknown;
         }
 
         // HTTP/1.1 200 OK\r\nDate: Wed, 06 Jul 2016 18:26:27 GMT\r\nContent-Length: 13\r\nContent-Type: text/plain\r\nServer: Kestrel\r\n\r\nHello, World!
-        public static bool TryGetHeaderLocation(byte[] buffer, byte[] header, int start, out int index, out int length)
+        public static bool SeekHeader(byte[] buffer, byte[] header, int start, out int index, out int length)
         {
             for (var i = 0; i < header.Length; i++)
             {
                 if (header[i] == buffer[start + i])
                     continue;
 
-                var next = FindReturn(buffer, start + i);
+                var next = SeekReturn(buffer, start + i);
 
                 if (next != -1)
-                    return TryGetHeaderLocation(buffer, header, next + 2, out index, out length);
+                    return SeekHeader(buffer, header, next, out index, out length);
 
                 index = -1;
                 length = 0;
@@ -46,36 +45,32 @@ namespace Netling.Core.Performance
             }
 
             index = start + header.Length;
-            var end = FindReturn(buffer, index);
+            var end = SeekReturn(buffer, index);
             length = end - index;
             return true;
         }
 
-        // \r\n\r\n = 13 10 13 10
-        public static int GetHeaderLength(byte[] buffer)
+        private static int SeekReturn(byte[] buffer, int i)
         {
-            var i = 0;
-            while (buffer.Length > i + 3)
+            while (buffer.Length > i + 1)
             {
-                if (buffer[i] == 13 &&
-                    buffer[i + 1] == 10 &&
-                    buffer[i + 2] == 13 &&
-                    buffer[i + 3] == 10)
-                    return i + 4;
+                if (buffer[i] == 13)
+                    return i;
 
                 i++;
             }
 
             return -1;
         }
-
-        // \r\n = 13 10
-        public static int FindReturn(byte[] buffer, int i)
+        
+        public static int SeekDoubleReturn(byte[] buffer, int i)
         {
-            while (buffer.Length > i + 1)
+            while (buffer.Length > i + 3)
             {
                 if (buffer[i] == 13 &&
-                    buffer[i + 1] == 10)
+                    buffer[i + 1] == 10 &&
+                    buffer[i + 2] == 13 &&
+                    buffer[i + 3] == 10)
                     return i;
 
                 i++;

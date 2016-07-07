@@ -51,7 +51,7 @@ namespace Netling.Core.Performance
             }
             else if (_responseType == ResponseType.ContentLength)
             {
-                var totalLength = HttpHelper.GetHeaderLength(buffer) + HttpHelperContentLength.GetContentLength(buffer);
+                var totalLength = HttpHelper.SeekDoubleReturn(buffer, 0) + 4 + HttpHelperContentLength.GetContentLength(buffer);
 
                 if (totalLength > length)
                     length = HttpHelperContentLength.ReadContentLengthStream(_client, read, totalLength);
