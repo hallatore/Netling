@@ -14,7 +14,20 @@ namespace Netling.Core.Performance
 
             var b = new byte[length];
             Array.Copy(buffer, index, b, 0, length);
-            return Convert.ToInt32(Encoding.UTF8.GetString(b));
+            return ConvertToInt(b);
+        }
+
+        private static int ConvertToInt(byte[] bytes)
+        {
+            var result = 0;
+            var length = bytes.Length;
+
+            for (var i = 0; i < length; i++)
+            {
+                result = result * 10 + (bytes[i] - '0');
+            }
+
+            return result;
         }
 
         public static int ReadContentLengthStream(TcpClient client, int length, int end)
