@@ -61,7 +61,7 @@ namespace Netling.Core.Performance
                     buffer[i + 1] == 10 &&
                     buffer[i + 2] == 13 &&
                     buffer[i + 3] == 10)
-                    return i;
+                    return i + 4;
 
                 i++;
             }
