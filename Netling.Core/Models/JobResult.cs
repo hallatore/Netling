@@ -6,9 +6,9 @@ namespace Netling.Core.Models
     public class JobResult
     {
         public Dictionary<int, Item> Seconds { get; private set; }
-        public int Count { get; private set; }
+        public long Count { get; private set; }
         public double ElapsedMilliseconds { get; private set; }
-        public int Errors { get; private set; }
+        public long Errors { get; private set; }
         public double BytesPrSecond { get; private set; }
         public double JobsPerSecond { get; private set; }
         public double AverageResponseTime { get; private set; }
@@ -48,7 +48,7 @@ namespace Netling.Core.Models
             return item;
         }
 
-        private void AddMerged(int elapsed, long bytes, double responseTime, int count, int errorCount)
+        private void AddMerged(int elapsed, long bytes, double responseTime, long count, long errorCount)
         {
             GetItem(elapsed).AddMerged(bytes, responseTime, count, errorCount);
         }
@@ -70,8 +70,8 @@ namespace Netling.Core.Models
 
     public class Item
     {
-        public int Count { get; set; }
-        public int ErrorCount { get; private set; }
+        public long Count { get; set; }
+        public long ErrorCount { get; private set; }
         public long Bytes { get; private set; }
         public double ResponseTime { get; private set; }
         public int Elapsed { get; private set; }
@@ -93,7 +93,7 @@ namespace Netling.Core.Models
             ErrorCount++;
         }
 
-        public void AddMerged(long bytes, double responseTime, int count, int errorCount)
+        public void AddMerged(long bytes, double responseTime, long count, long errorCount)
         {
             Count += count;
             ErrorCount += errorCount;
