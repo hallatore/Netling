@@ -11,34 +11,34 @@
         </Grid.RowDefinitions>
         <StackPanel VerticalAlignment="Top" Margin="0,0,0,20">
             <Grid VerticalAlignment="Top">
-                <Grid VerticalAlignment="Top" HorizontalAlignment="Left" Width="140">
+                <Grid VerticalAlignment="Top" HorizontalAlignment="Left" MinWidth="140">
                     <TextBlock Text="Requests per second" VerticalAlignment="Top" HorizontalAlignment="Center"/>
                     <TextBlock x:Name="RequestsPerSecond" Text="0" VerticalAlignment="Top" Foreground="#ff0079c5" HorizontalAlignment="Center" FontSize="32" Margin="0,16,0,0"/>
                 </Grid>
 
-                <Grid VerticalAlignment="Top" HorizontalAlignment="Center" Width="140">
+                <Grid VerticalAlignment="Top" HorizontalAlignment="Center" MinWidth="140">
                     <TextBlock Text="Avg response time" VerticalAlignment="Top" HorizontalAlignment="Center"/>
                     <TextBlock x:Name="ResponseTime" Text="0" VerticalAlignment="Top" Foreground="#ff0079c5" HorizontalAlignment="Center" FontSize="32" Margin="0,16,0,0"/>
                 </Grid>
 
-                <Grid VerticalAlignment="Top" HorizontalAlignment="Right" Width="140">
+                <Grid VerticalAlignment="Top" HorizontalAlignment="Right" MinWidth="140">
                     <TextBlock Text="Bandwidth (mbit)" VerticalAlignment="Top" HorizontalAlignment="Center"/>
                     <TextBlock x:Name="Bandwidth" Text="0" VerticalAlignment="Top" Foreground="#ff0079c5" HorizontalAlignment="Center" FontSize="32" Margin="0,16,0,0"/>
                 </Grid>
             </Grid>
             
             <Grid VerticalAlignment="Top" Margin="0,20,0,0">
-                <Grid VerticalAlignment="Top" HorizontalAlignment="Left" Width="140">
+                <Grid VerticalAlignment="Top" HorizontalAlignment="Left" MinWidth="140">
                     <TextBlock Text="Elapsed (ms)" VerticalAlignment="Top" HorizontalAlignment="Center"/>
                     <TextBlock x:Name="Elapsed" Text="0" VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="32" Margin="0,16,0,0"/>
                 </Grid>
-            
-                <Grid VerticalAlignment="Top" HorizontalAlignment="Center" Width="140">
+
+                <Grid VerticalAlignment="Top" HorizontalAlignment="Center" MinWidth="140">
                     <TextBlock Text="Total requests" VerticalAlignment="Top" HorizontalAlignment="Center"/>
                     <TextBlock x:Name="TotalRequests" Text="0" VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="32" Margin="0,16,0,0"/>
                 </Grid>
 
-                <Grid VerticalAlignment="Top" HorizontalAlignment="Right" Width="140">
+                <Grid VerticalAlignment="Top" HorizontalAlignment="Right" MinWidth="140">
                     <TextBlock Text="Errors" VerticalAlignment="Top" HorizontalAlignment="Center"/>
                     <TextBlock x:Name="Errors" Text="0" VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="32" Margin="0,16,0,0"/>
                 </Grid>
