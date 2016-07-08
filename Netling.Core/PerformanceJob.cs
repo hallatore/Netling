@@ -14,7 +14,7 @@ namespace Netling.Core
         public JobResult Process(int threads, int pipelining, TimeSpan duration, string url, CancellationToken cancellationToken)
         {
             ThreadPool.SetMinThreads(int.MaxValue, int.MaxValue);
-            var results = new ConcurrentQueue<List<UrlResult>>();
+            var results = new ConcurrentQueue<JobResult>();
             var events = new List<ManualResetEventSlim>();
             var sw = new Stopwatch();
             sw.Start();
@@ -25,7 +25,7 @@ namespace Netling.Core
                 var resetEvent = new ManualResetEventSlim(false);
                 ThreadPool.QueueUserWorkItem((state) =>
                     {
-                        var result = new List<UrlResult>();
+                        var result = new JobResult();
                         var sw2 = new Stopwatch();
                         var worker = new HttpWorker(url);
 
@@ -40,8 +40,7 @@ namespace Netling.Core
                                     worker.Write();
                                     worker.Flush();
                                     var length = worker.Read();
-                                    var tmp = new UrlResult(sw.Elapsed.TotalMilliseconds, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, length);
-                                    result.Add(tmp);
+                                    result.Add((int)Math.Floor(sw.Elapsed.TotalSeconds), length, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000);
                                 }
                                 else { 
                                     for (var j = 0; j < pipelining; j++)
@@ -54,14 +53,13 @@ namespace Netling.Core
                                     for (var j = 0; j < pipelining; j++)
                                     {
                                         var length = worker.ReadPipelined();
-                                        var tmp = new UrlResult(sw.Elapsed.TotalMilliseconds, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, length);
-                                        result.Add(tmp);
+                                        result.Add((int)Math.Floor(sw.Elapsed.TotalSeconds), length, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000);
                                     }
                                 }
                             }
                             catch (Exception ex)
                             {
-                                result.Add(new UrlResult(sw.Elapsed.TotalMilliseconds));
+                                result.AddError((int)Math.Floor(sw.Elapsed.TotalSeconds));
                             }
                         }
 
@@ -78,9 +76,8 @@ namespace Netling.Core
                 var group = events.Skip(i).Take(50).Select(r => r.WaitHandle).ToArray();
                 WaitHandle.WaitAll(group);
             }
-
-            var finalResults = results.SelectMany(r => r, (a, b) => b).ToList();
-            return new JobResult(threads, totalRuntime, finalResults);
+            
+            return JobResult.Merge(totalRuntime, results.ToList());
         }
     }
 }

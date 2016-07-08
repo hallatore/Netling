@@ -46,7 +46,6 @@
     <Compile Include="PerformanceJob.cs" />
     <Compile Include="Job.cs" />
     <Compile Include="Models\JobResult.cs" />
-    <Compile Include="Models\UrlResult.cs" />
     <Compile Include="Performance\HttpHeaders.cs" />
     <Compile Include="Performance\HttpHelper.cs" />
     <Compile Include="Performance\HttpHelperChunked.cs" />

@@ -16,8 +16,7 @@ namespace Netling.Client
             Elapsed.Text = $"{result.ElapsedMilliseconds:#,0}";
             Bandwidth.Text = $"{Math.Round(result.BytesPrSecond * 8 / 1024 / 1024, MidpointRounding.AwayFromZero):0}";
             Errors.Text = $"{result.Errors:#,0}";
-            var avgResponseTime = result.Results.Where(r => !r.IsError).DefaultIfEmpty(new UrlResult(0)).Average(r => r.ResponseTime);
-            ResponseTime.Text = string.Format(avgResponseTime > 5 ? "{0:#,0}" : "{0:0.00}", avgResponseTime);
+            ResponseTime.Text = string.Format(result.AverageResponseTime > 5 ? "{0:#,0}" : "{0:0.00}", result.AverageResponseTime);
             LoadGraphs(result);
         }
 
@@ -25,12 +24,10 @@ namespace Netling.Client
         {
             var max = (int)Math.Floor(result.ElapsedMilliseconds / 1000);
 
-            var dataPoints = result.Results
-                .Where(r => !r.IsError)
-                .GroupBy(r => (int)((r.Elapsed + r.ResponseTime) / 1000))
+            var dataPoints = result.Seconds
                 .Where(r => r.Key < max)
                 .OrderBy(r => r.Key)
-                .Select(r => new DataPoint(r.Key, r.Count()));
+                .Select(r => new DataPoint(r.Key, r.Value.Count));
 
             RequestsPerSecondGraph.Draw(dataPoints);
         }

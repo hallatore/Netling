@@ -16,7 +16,7 @@ namespace Netling.Core
         {
             ThreadPool.SetMinThreads(int.MaxValue, int.MaxValue);
 
-            var results = new ConcurrentQueue<List<UrlResult>>();
+            var results = new ConcurrentQueue<JobResult>();
             var events = new List<ManualResetEvent>();
             var sw = new Stopwatch();
             sw.Start();
@@ -27,7 +27,7 @@ namespace Netling.Core
                 var resetEvent = new ManualResetEvent(false);
                 ThreadPool.QueueUserWorkItem(async (state) =>
                     {
-                        var result = new List<UrlResult>();
+                        var result = new JobResult();
                         var sw2 = new Stopwatch();
 
                         while (!cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.ElapsedMilliseconds)
@@ -45,13 +45,12 @@ namespace Netling.Core
                                 {
                                     await stream.CopyToAsync(ms).ConfigureAwait(false);
                                     sw2.Stop();
-                                    var tmp = new UrlResult(sw.Elapsed.TotalMilliseconds, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, ms.Length);
-                                    result.Add(tmp);
+                                    result.Add((int)Math.Floor(sw.Elapsed.TotalSeconds), ms.Length, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000);
                                 }
                             }
-                            catch (Exception)
+                            catch (Exception ex)
                             {
-                                result.Add(new UrlResult(sw.Elapsed.TotalMilliseconds));
+                                result.AddError((int)Math.Floor(sw.Elapsed.TotalSeconds));
                             }
                         }
 
@@ -69,8 +68,7 @@ namespace Netling.Core
                 WaitHandle.WaitAll(group);
             }
 
-            var finalResults = results.SelectMany(r => r, (a, b) => b).ToList();
-            return new JobResult(threads, totalRuntime, finalResults);
+            return JobResult.Merge(totalRuntime, results.ToList());
         }
     }
 }
