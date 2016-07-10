@@ -85,7 +85,7 @@ namespace Netling.Core.Performance
             var responseLength = HttpHelperContentLength.GetResponseLength(_buffer, _streamIndex, _read);
 
             // Happens if we cut the response at a bad place ...
-            if (responseLength < 0)
+            while (responseLength < 0)
             {
                 Array.Copy(_buffer, 0, _tmpBuffer, 0, _buffer.Length);
                 var tmpRead = _read;
