@@ -114,7 +114,7 @@ namespace Netling.Core
         {
             get
             {
-                int id = GetCurrentThreadId();
+                var id = GetCurrentThreadId();
                 return
                     (from ProcessThread th in System.Diagnostics.Process.GetCurrentProcess().Threads
                      where th.Id == id
