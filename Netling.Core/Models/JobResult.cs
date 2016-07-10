@@ -15,12 +15,13 @@ namespace Netling.Core.Models
 
         private void GenerateSummary(double elapsedMilliseconds)
         {
+            var items = Seconds.Select(r => r.Value).DefaultIfEmpty(new Item(0)).ToList();
             ElapsedMilliseconds = elapsedMilliseconds;
-            Count = Seconds.Sum(s => s.Value.Count);
-            Errors = Seconds.Sum(s => s.Value.ErrorCount);
-            BytesPrSecond = Seconds.Sum(s => s.Value.Bytes) / (elapsedMilliseconds / 1000);
+            Count = items.Sum(s => s.Count);
+            Errors = items.Sum(s => s.ErrorCount);
+            BytesPrSecond = items.Sum(s => s.Bytes) / (elapsedMilliseconds / 1000);
             JobsPerSecond = Count / (elapsedMilliseconds / 1000);
-            AverageResponseTime = Seconds.Where(r => r.Value.Count > 0).Average(s => s.Value.ResponseTime);
+            AverageResponseTime = items.Where(r => r.Count > 0).DefaultIfEmpty(new Item(0)).Average(s => s.ResponseTime);
         }
 
         public JobResult()
