@@ -28,8 +28,18 @@ namespace Netling.Core.Performance
             _read = 0;
             _responseType = ResponseType.Unknown;
             _uri = new Uri(url, UriKind.Absolute);
-            var host = Dns.GetHostEntry(_uri.Host);
-            var ip = host.AddressList.First(i => i.AddressFamily == AddressFamily.InterNetwork);
+            IPAddress ip;
+
+            if (_uri.HostNameType == UriHostNameType.Dns)
+            {
+                var host = Dns.GetHostEntry(_uri.Host);
+                ip = host.AddressList.First(i => i.AddressFamily == AddressFamily.InterNetwork);
+            }
+            else
+            {
+                ip = IPAddress.Parse(_uri.Host);
+            }
+            
             _endPoint = new IPEndPoint(ip, _uri.Port);
             _request = Encoding.UTF8.GetBytes($"GET {_uri.PathAndQuery} HTTP/1.1\r\nAccept-Encoding: gzip, deflate, sdch\r\nHost: {_uri.Host}\r\nContent-Length: 0\r\n\r\n");
         }
