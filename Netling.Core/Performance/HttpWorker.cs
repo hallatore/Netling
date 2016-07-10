@@ -31,7 +31,7 @@ namespace Netling.Core.Performance
             var host = Dns.GetHostEntry(_uri.Host);
             var ip = host.AddressList.First(i => i.AddressFamily == AddressFamily.InterNetwork);
             _endPoint = new IPEndPoint(ip, _uri.Port);
-            _request = Encoding.UTF8.GetBytes($"GET {_uri.PathAndQuery} HTTP/1.1\r\nAccept-Encoding: gzip, deflate, sdch\r\nConnection: keep-alive\r\nHost: {_uri.Host}\r\nContent-Length: 0\r\n\r\n");
+            _request = Encoding.UTF8.GetBytes($"GET {_uri.PathAndQuery} HTTP/1.1\r\nAccept-Encoding: gzip, deflate, sdch\r\nHost: {_uri.Host}\r\nContent-Length: 0\r\n\r\n");
         }
 
         public void Write()
