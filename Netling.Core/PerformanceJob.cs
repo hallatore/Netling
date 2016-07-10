@@ -93,7 +93,13 @@ namespace Netling.Core
         {
             var thread = new Thread(() => {
                 Thread.BeginThreadAffinity();
-                var afinity = i % Environment.ProcessorCount + 1;
+                var afinity = i * 2 % Environment.ProcessorCount;
+
+                if (i > Environment.ProcessorCount / 2)
+                    afinity += 2;
+                else
+                    afinity += 1;
+
                 CurrentThread.ProcessorAffinity = new IntPtr(afinity);
                 action.Invoke();
                 Thread.EndThreadAffinity();
