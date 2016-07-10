@@ -93,14 +93,8 @@ namespace Netling.Core
         {
             var thread = new Thread(() => {
                 Thread.BeginThreadAffinity();
-                var afinity = i * 2 % Environment.ProcessorCount;
-
-                if (i > Environment.ProcessorCount / 2)
-                    afinity += 2;
-                else
-                    afinity += 1;
-
-                CurrentThread.ProcessorAffinity = new IntPtr(afinity);
+                var afinity = GetAfinity(i + 1, Environment.ProcessorCount);
+                CurrentThread.ProcessorAffinity = new IntPtr(1 << afinity);
                 action.Invoke();
                 Thread.EndThreadAffinity();
             });
@@ -120,6 +114,16 @@ namespace Netling.Core
                      where th.Id == id
                      select th).Single();
             }
+        }
+
+        private static int GetAfinity(int i, int cores)
+        {
+            var afinity = i * 2 % cores;
+
+            if (i % cores >= cores / 2)
+                afinity++;
+
+            return afinity;
         }
     }
 }
