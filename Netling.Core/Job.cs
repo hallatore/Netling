@@ -12,7 +12,7 @@ namespace Netling.Core
 {
     public class Job : IJob
     {
-        public JobResult Process(int threads, int pipelining, TimeSpan duration, string url, CancellationToken cancellationToken)
+        public JobResult Process(int threads, bool threadAfinity, int pipelining, TimeSpan duration, string url, CancellationToken cancellationToken)
         {
             ThreadPool.SetMinThreads(int.MaxValue, int.MaxValue);
 

@@ -12,62 +12,20 @@ namespace Netling.Core
 {
     public class PerformanceJob : IJob
     {
-        public JobResult Process(int threads, int pipelining, TimeSpan duration, string url, CancellationToken cancellationToken)
+        public JobResult Process(int threads, bool threadAfinity, int pipelining, TimeSpan duration, string url, CancellationToken cancellationToken)
         {
-            ThreadPool.SetMinThreads(int.MaxValue, int.MaxValue);
             var results = new ConcurrentQueue<JobResult>();
             var events = new List<ManualResetEventSlim>();
             var sw = new Stopwatch();
             sw.Start();
-            var totalRuntime = 0.0;
 
             for (var i = 0; i < threads; i++)
             {
                 var resetEvent = new ManualResetEventSlim(false);
-                QueueThreadWithAfinity(i, () =>
+
+                QueueThread(i, threadAfinity, () =>
                 {
-                    var result = new JobResult();
-                    var sw2 = new Stopwatch();
-                    var worker = new HttpWorker(url);
-
-                    while (!cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.ElapsedMilliseconds)
-                    {
-                        sw2.Restart();
-
-                        try
-                        {
-                            if (pipelining == 1)
-                            {
-                                worker.Write();
-                                worker.Flush();
-                                var length = worker.Read();
-                                result.Add((int)Math.Floor(sw.Elapsed.TotalSeconds), length, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000);
-                            }
-                            else
-                            {
-                                for (var j = 0; j < pipelining; j++)
-                                {
-                                    worker.Write();
-                                }
-
-                                worker.Flush();
-
-                                for (var j = 0; j < pipelining; j++)
-                                {
-                                    var length = worker.ReadPipelined();
-                                    result.Add((int)Math.Floor(sw.Elapsed.TotalSeconds), length, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000);
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            result.AddError((int)Math.Floor(sw.Elapsed.TotalSeconds));
-                        }
-                    }
-
-                    results.Enqueue(result);
-                    resetEvent.Set();
-                    totalRuntime = sw.Elapsed.TotalMilliseconds;
+                    DoWork(url, duration, pipelining, results, sw, cancellationToken, resetEvent);
                 });
 
                 events.Add(resetEvent);
@@ -79,24 +37,72 @@ namespace Netling.Core
                 WaitHandle.WaitAll(group);
             }
             
-            return JobResult.Merge(totalRuntime, results.ToList());
+            return JobResult.Merge(sw.Elapsed.TotalMilliseconds, results.ToList());
         }
 
-        private void QueueThread(int i, Action action)
+        private void DoWork(string url, TimeSpan duration, int pipelining, ConcurrentQueue<JobResult> results, Stopwatch sw, CancellationToken cancellationToken, ManualResetEventSlim resetEvent)
         {
-            ThreadPool.QueueUserWorkItem((s) => {
-                action.Invoke();
-            });
+            Debug.WriteLine("Thread created");
+            var result = new JobResult();
+            var sw2 = new Stopwatch[pipelining + 1];
+            var worker = new HttpWorker(url);
+
+            for (var y = 0; y < pipelining; y++)
+            {
+                sw2[y] = new Stopwatch();
+            }
+
+            while (!cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.Elapsed.TotalMilliseconds)
+            {
+                try
+                {
+                    for (var j = 0; j < pipelining; j++)
+                    {
+                        worker.Write();
+                    }
+
+                    worker.Flush();
+
+                    if (pipelining == 1)
+                    {
+                        sw2[0].Restart();
+                        var length = worker.Read();
+                        result.Add((int)Math.Floor(sw.Elapsed.TotalSeconds), length, (double)sw2[0].ElapsedTicks / Stopwatch.Frequency * 1000);
+                    }
+                    else
+                    {
+                        for (var j = 0; j < pipelining; j++)
+                        {
+                            sw2[j].Restart();
+                            var length = worker.ReadPipelined();
+                            result.Add((int)Math.Floor(sw.Elapsed.TotalSeconds), length, (double)sw2[j].ElapsedTicks / Stopwatch.Frequency * 1000);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    result.AddError((int)Math.Floor(sw.Elapsed.TotalSeconds));
+                }
+            }
+
+            results.Enqueue(result);
+            resetEvent.Set();
         }
 
-        private void QueueThreadWithAfinity(int i, Action action)
+        private void QueueThread(int i, bool useThreadAfinity, Action action)
         {
             var thread = new Thread(() => {
-                Thread.BeginThreadAffinity();
-                var afinity = GetAfinity(i + 1, Environment.ProcessorCount);
-                CurrentThread.ProcessorAffinity = new IntPtr(1 << afinity);
+                if (useThreadAfinity)
+                {
+                    Thread.BeginThreadAffinity();
+                    var afinity = GetAfinity(i + 1, Environment.ProcessorCount);
+                    CurrentThread.ProcessorAffinity = new IntPtr(1 << afinity);
+                }
+                
                 action.Invoke();
-                Thread.EndThreadAffinity();
+
+                if (useThreadAfinity)
+                    Thread.EndThreadAffinity();
             });
             thread.Start();
         }

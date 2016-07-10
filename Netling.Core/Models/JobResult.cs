@@ -21,7 +21,7 @@ namespace Netling.Core.Models
             Errors = items.Sum(s => s.ErrorCount);
             BytesPrSecond = items.Sum(s => s.Bytes) / (elapsedMilliseconds / 1000);
             JobsPerSecond = Count / (elapsedMilliseconds / 1000);
-            AverageResponseTime = items.Where(r => r.Count > 0).DefaultIfEmpty(new Item(0)).Average(s => s.ResponseTime);
+            AverageResponseTime = items.Where(r => r.ResponseTime > 0).DefaultIfEmpty(new Item(0)).Average(s => s.ResponseTime);
         }
 
         public JobResult()

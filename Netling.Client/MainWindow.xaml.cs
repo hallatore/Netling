@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,6 +26,20 @@ namespace Netling.Client
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
+            Threads.SelectedValuePath = "Key";
+            Threads.DisplayMemberPath = "Value";
+
+            for (var i = 1; i <= Environment.ProcessorCount; i++)
+            {
+                Threads.Items.Add(new KeyValuePair<int, string>(i, i.ToString()));
+            }
+
+            for (var i = 2; i <= 10; i++)
+            {
+                Threads.Items.Add(new KeyValuePair<int, string>(Environment.ProcessorCount * i, $"{Environment.ProcessorCount * i} - ({i} per core)"));
+            }
+
+            Threads.SelectedIndex = 0;
             Urls.Focus();
         }
 
@@ -33,7 +48,8 @@ namespace Netling.Client
             if (!_running)
             {
                 var duration = default(TimeSpan);
-                var threads = Convert.ToInt32(Threads.SelectionBoxItem);
+                var threads = Convert.ToInt32(((KeyValuePair<int, string>)Threads.SelectionBoxItem).Key);
+                var threadAfinity = ThreadAfinity.IsChecked.HasValue && ThreadAfinity.IsChecked.Value;
                 var pipelining = Convert.ToInt32(Pipelining.SelectionBoxItem);
                 var durationText = (string)((ComboBoxItem)Duration.SelectedItem).Content;
                 StatusProgressbar.IsIndeterminate = false;
@@ -78,7 +94,7 @@ namespace Netling.Client
                 StatusProgressbar.Value = 0;
                 StatusProgressbar.Visibility = Visibility.Visible;
                 
-                _task = Task.Factory.StartNew(() => job.Process(threads, pipelining, duration, url, cancellationToken), TaskCreationOptions.LongRunning);
+                _task = Task.Factory.StartNew(() => job.Process(threads, threadAfinity, pipelining, duration, url, cancellationToken), TaskCreationOptions.LongRunning);
                 _task.GetAwaiter().OnCompleted(JobCompleted);
 
                 StartButton.Content = "Cancel";
