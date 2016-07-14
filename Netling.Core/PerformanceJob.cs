@@ -52,6 +52,7 @@ namespace Netling.Core
             var sw2 = new Stopwatch();
             var worker = new HttpWorker(url);
 
+            // Priming connection ...
             try
             {
                 worker.Write();

@@ -85,10 +85,23 @@ namespace Netling.Client
             var splits = 200;
             var divider = (max - min) / splits;
             var step = min;
+            var y = 0;
 
             for (var i = 0; i < splits; i++)
             {
-                result.Add(new DataPoint(step + (divider / 2), responeTimes.Count(r => r >= step && r < step + divider)));
+                var count = 0;
+                var stepMax = step + divider;
+
+                if (i + 1 == splits)
+                    stepMax = double.MaxValue;
+
+                while (y < responeTimes.Length && responeTimes[y] < stepMax)
+                {
+                    y++;
+                    count++;
+                }
+
+                result.Add(new DataPoint(step + (divider / 2), count));
                 step += divider;
             }
 
