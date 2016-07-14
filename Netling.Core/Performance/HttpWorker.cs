@@ -82,7 +82,7 @@ namespace Netling.Core.Performance
             return length;
         }
 
-        // experimental ...
+        // experimental ... Chunked transfer do NOT work yet!
         public int ReadPipelined()
         {
             if (_streamIndex == 0)

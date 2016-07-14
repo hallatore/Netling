@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Threading;
 using Netling.Core;
 using Netling.Core.Models;
 
@@ -18,9 +18,13 @@ namespace Netling.Client
         private CancellationTokenSource _cancellationTokenSource;
         private Task<JobResult> _task;
 
+        public BaselineResult BaselineResult { get; set; }
+
         public MainWindow()
         {
             InitializeComponent();
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en");
+            Thread.CurrentThread.CurrentUICulture = new CultureInfo("en");
             Loaded += OnLoaded;
         }
 
@@ -128,11 +132,6 @@ namespace Netling.Client
             StartButton.Focus();
         }
 
-        private void OnProgress(double amount)
-        {
-            Dispatcher.InvokeAsync(() => StatusProgressbar.Value = amount, DispatcherPriority.Background);
-        }
-
         private void JobCompleted()
         {
             Threads.IsEnabled = true;
@@ -143,7 +142,7 @@ namespace Netling.Client
             _cancellationTokenSource = null;
             _running = false;
 
-            var result = new ResultWindow(_task.Result);
+            var result = new ResultWindow(_task.Result, this);
             _task = null;
             result.Show();
         }

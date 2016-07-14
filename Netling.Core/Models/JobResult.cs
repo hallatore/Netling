@@ -11,7 +11,11 @@ namespace Netling.Core.Models
         public long Errors { get; private set; }
         public double BytesPrSecond { get; private set; }
         public double JobsPerSecond { get; private set; }
-        public double AverageResponseTime { get; private set; }
+        public List<double> ResponseTimes { get; private set; }
+        public string Url { get; set; }
+        public int Threads { get; set; }
+        public bool ThreadAfinity { get; set; }
+        public int Pipelining { get; set; }
 
         private void GenerateSummary(double elapsedMilliseconds)
         {
@@ -21,7 +25,7 @@ namespace Netling.Core.Models
             Errors = items.Sum(s => s.ErrorCount);
             BytesPrSecond = items.Sum(s => s.Bytes) / (elapsedMilliseconds / 1000);
             JobsPerSecond = Count / (elapsedMilliseconds / 1000);
-            AverageResponseTime = items.Where(r => r.ResponseTime > 0).DefaultIfEmpty(new Item(0)).Average(s => s.ResponseTime);
+            ResponseTimes = items.SelectMany(s => s.ResponseTimes).ToList();
         }
 
         public JobResult()
@@ -34,9 +38,9 @@ namespace Netling.Core.Models
             GetItem(elapsed).Add(bytes, responsetime);
         }
 
-        public void AddError(int elapsed)
+        public void AddError(int elapsed, double responsetime)
         {
-            GetItem(elapsed).AddError();
+            GetItem(elapsed).AddError(responsetime);
         }
 
         private Item GetItem(int elapsed)
@@ -49,9 +53,9 @@ namespace Netling.Core.Models
             return item;
         }
 
-        private void AddMerged(int elapsed, long bytes, double responseTime, long count, long errorCount)
+        private void AddMerged(int elapsed, long bytes, List<double> responseTimes, long count, long errorCount)
         {
-            GetItem(elapsed).AddMerged(bytes, responseTime, count, errorCount);
+            GetItem(elapsed).AddMerged(bytes, responseTimes, count, errorCount);
         }
 
         public static JobResult Merge(double elapsedMilliseconds, IReadOnlyList<JobResult> results)
@@ -61,7 +65,7 @@ namespace Netling.Core.Models
 
             foreach (var item in tmp)
             {
-                result.AddMerged(item.Value.Elapsed, item.Value.Bytes, item.Value.ResponseTime / item.Value.Count, item.Value.Count, item.Value.ErrorCount);
+                result.AddMerged(item.Value.Elapsed, item.Value.Bytes, item.Value.ResponseTimes, item.Value.Count, item.Value.ErrorCount);
             }
 
             result.GenerateSummary(elapsedMilliseconds);
@@ -74,32 +78,35 @@ namespace Netling.Core.Models
         public long Count { get; set; }
         public long ErrorCount { get; private set; }
         public long Bytes { get; private set; }
-        public double ResponseTime { get; private set; }
+        public List<double> ResponseTimes { get; private set; }
         public int Elapsed { get; private set; }
 
         public Item(int elapsed)
         {
             Elapsed = elapsed;
+            ResponseTimes = new List<double>();
         }
 
         public void Add(long bytes, double responseTime)
         {
             Count++;
             Bytes += bytes;
-            ResponseTime += responseTime;
+            ResponseTimes.Add(responseTime);
         }
 
-        public void AddError()
+        public void AddError(double responseTime)
         {
+            Count++;
             ErrorCount++;
+            ResponseTimes.Add(responseTime);
         }
 
-        public void AddMerged(long bytes, double responseTime, long count, long errorCount)
+        public void AddMerged(long bytes, List<double> responseTimes, long count, long errorCount)
         {
             Count += count;
             ErrorCount += errorCount;
             Bytes += bytes;
-            ResponseTime += responseTime;
+            ResponseTimes.AddRange(responseTimes);
         }
     }
 }

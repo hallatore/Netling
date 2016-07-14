@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows.Controls;
 using OxyPlot;
 using OxyPlot.Axes;
@@ -6,7 +7,7 @@ using OxyPlot.Series;
 
 namespace Netling.Client
 {
-    public partial class LineGraphControl : UserControl
+    public partial class LineGraphControl
     {
         public LineGraphControl()
         {
@@ -41,7 +42,7 @@ namespace Netling.Client
                 IsZoomEnabled = false,
                 IsPanEnabled = false
             });
-
+            
             var ls = new LineSeries {Color = OxyColor.Parse("#ff0079c5")};
 
             foreach (var point in points)

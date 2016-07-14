@@ -89,11 +89,16 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="BaselineResult.cs" />
+    <Compile Include="Extensions\DoubleExtensions.cs" />
     <Compile Include="LineGraphControl.xaml.cs">
       <DependentUpon>LineGraphControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="ResultWindow.xaml.cs">
       <DependentUpon>ResultWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ValueUserControl.xaml.cs">
+      <DependentUpon>ValueUserControl.xaml</DependentUpon>
     </Compile>
     <Page Include="LineGraphControl.xaml">
       <SubType>Designer</SubType>
@@ -112,6 +117,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="ResultWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ValueUserControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -142,7 +151,9 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Netling.Core\Netling.Core.csproj">

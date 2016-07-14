@@ -1,51 +1,48 @@
 ﻿<Window x:Class="Netling.Client.ResultWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:oxy="http://oxyplot.codeplex.com"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:client="clr-namespace:Netling.Client"
-        Title="Result" Height="500" Width="500" MinHeight="200" MinWidth="410" WindowStyle="SingleBorderWindow">
-    <Grid Margin="10,20,10,10">
+        Title="Netling" Height="550" Width="650" WindowStyle="SingleBorderWindow" ResizeMode="NoResize">
+    <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <StackPanel VerticalAlignment="Top" Margin="0,0,0,20">
-            <Grid VerticalAlignment="Top">
-                <Grid VerticalAlignment="Top" HorizontalAlignment="Left" MinWidth="140">
-                    <TextBlock Text="Requests per second" VerticalAlignment="Top" HorizontalAlignment="Center"/>
-                    <TextBlock x:Name="RequestsPerSecond" Text="0" VerticalAlignment="Top" Foreground="#ff0079c5" HorizontalAlignment="Center" FontSize="32" Margin="0,16,0,0"/>
-                </Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <client:ValueUserControl x:Name="ThreadsValueUserControl" Title="Threads" Grid.Row="0" Grid.Column="0" Margin="0,0,0,20"/>
+        <client:ValueUserControl x:Name="PipeliningValueUserControl" Title="Pipelining" Grid.Row="0" Grid.Column="1"/>
+        <client:ValueUserControl x:Name="ThreadAfinityValueUserControl" Title="Thread afinity" Grid.Row="0" Grid.Column="2"/>
+        <Grid Grid.Row="0" Grid.Column="3">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Button Margin="0,0,0,5" Background="LightGray" BorderThickness="0" Foreground="Black" Padding="5" FontSize="11" Click="UseBaseline">USE AS BASELINE</Button>
+            <Button Grid.Row="1" Background="LightGray" BorderThickness="0" Foreground="Black" Padding="5" FontSize="11" Click="ClearBaseline">CLEAR BASELINE</Button>
+        </Grid>
 
-                <Grid VerticalAlignment="Top" HorizontalAlignment="Center" MinWidth="140">
-                    <TextBlock Text="Avg response time" VerticalAlignment="Top" HorizontalAlignment="Center"/>
-                    <TextBlock x:Name="ResponseTime" Text="0" VerticalAlignment="Top" Foreground="#ff0079c5" HorizontalAlignment="Center" FontSize="32" Margin="0,16,0,0"/>
-                </Grid>
+        <client:ValueUserControl x:Name="RequestsValueUserControl" Title="Requests" Unit="rps" Grid.Row="1" Grid.Column="0"/>
+        <client:ValueUserControl x:Name="BandwidthValueUserControl" Title="Bandwidth" Unit="mbit" Grid.Row="1" Grid.Column="1"/>
+        <client:ValueUserControl x:Name="ErrorsValueUserControl" Title="Errors" Grid.Row="1" Grid.Column="2"/>
+        <client:ValueUserControl x:Name="ElapsedValueUserControl" Title="Elapsed" Unit="s" Grid.Row="1" Grid.Column="3"/>
 
-                <Grid VerticalAlignment="Top" HorizontalAlignment="Right" MinWidth="140">
-                    <TextBlock Text="Bandwidth (mbit)" VerticalAlignment="Top" HorizontalAlignment="Center"/>
-                    <TextBlock x:Name="Bandwidth" Text="0" VerticalAlignment="Top" Foreground="#ff0079c5" HorizontalAlignment="Center" FontSize="32" Margin="0,16,0,0"/>
-                </Grid>
-            </Grid>
-            
-            <Grid VerticalAlignment="Top" Margin="0,20,0,0">
-                <Grid VerticalAlignment="Top" HorizontalAlignment="Left" MinWidth="140">
-                    <TextBlock Text="Elapsed (ms)" VerticalAlignment="Top" HorizontalAlignment="Center"/>
-                    <TextBlock x:Name="Elapsed" Text="0" VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="32" Margin="0,16,0,0"/>
-                </Grid>
+        <client:ValueUserControl x:Name="MedianValueUserControl" Title="Median" Unit="ms" Grid.Row="2" Grid.Column="0"/>
+        <client:ValueUserControl x:Name="StdDevValueUserControl" Title="StdDev" Unit="ms" Grid.Row="2" Grid.Column="1"/>
+        <client:ValueUserControl x:Name="MinValueUserControl" Title="Min" Unit="ms" Grid.Row="2" Grid.Column="2"/>
+        <client:ValueUserControl x:Name="MaxValueUserControl" Title="Max" Unit="ms" Grid.Row="2" Grid.Column="3"/>
 
-                <Grid VerticalAlignment="Top" HorizontalAlignment="Center" MinWidth="140">
-                    <TextBlock Text="Total requests" VerticalAlignment="Top" HorizontalAlignment="Center"/>
-                    <TextBlock x:Name="TotalRequests" Text="0" VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="32" Margin="0,16,0,0"/>
-                </Grid>
-
-                <Grid VerticalAlignment="Top" HorizontalAlignment="Right" MinWidth="140">
-                    <TextBlock Text="Errors" VerticalAlignment="Top" HorizontalAlignment="Center"/>
-                    <TextBlock x:Name="Errors" Text="0" VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="32" Margin="0,16,0,0"/>
-                </Grid>
-            </Grid>
-        </StackPanel>
-        <TabControl Grid.Row="1" Margin="0,0,0,10" Padding="0">
-            <TabItem Header="Requests per second">
+        <TabControl Grid.Row="3" Grid.ColumnSpan="4" Margin="0,20,0,0" Padding="0">
+            <TabItem Header="LATENCY HISTOGRAM" FontSize="11">
+                <client:LineGraphControl x:Name="HistogramGraph"/>
+            </TabItem>
+            <TabItem Header="REQUEST THROUGHPUT" FontSize="11">
                 <client:LineGraphControl x:Name="RequestsPerSecondGraph"/>
             </TabItem>
         </TabControl>

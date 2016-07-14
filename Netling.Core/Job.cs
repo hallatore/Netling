@@ -50,7 +50,7 @@ namespace Netling.Core
                             }
                             catch (Exception ex)
                             {
-                                result.AddError((int)Math.Floor(sw.Elapsed.TotalSeconds));
+                                result.AddError((int)Math.Floor(sw.Elapsed.TotalSeconds), (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000);
                             }
                         }
 

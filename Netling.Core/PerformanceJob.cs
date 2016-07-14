@@ -37,25 +37,34 @@ namespace Netling.Core
                 WaitHandle.WaitAll(group);
             }
             
-            return JobResult.Merge(sw.Elapsed.TotalMilliseconds, results.ToList());
+            var result = JobResult.Merge(sw.Elapsed.TotalMilliseconds, results.ToList());
+            result.Url = url;
+            result.Threads = threads;
+            result.ThreadAfinity = threadAfinity;
+            result.Pipelining = pipelining;
+            return result;
         }
 
         private void DoWork(string url, TimeSpan duration, int pipelining, ConcurrentQueue<JobResult> results, Stopwatch sw, CancellationToken cancellationToken, ManualResetEventSlim resetEvent)
         {
             Debug.WriteLine("Thread created");
             var result = new JobResult();
-            var sw2 = new Stopwatch[pipelining + 1];
+            var sw2 = new Stopwatch();
             var worker = new HttpWorker(url);
 
-            for (var y = 0; y < pipelining; y++)
+            try
             {
-                sw2[y] = new Stopwatch();
+                worker.Write();
+                worker.Flush();
+                worker.Read();
             }
+            catch (Exception) {}
 
             while (!cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.Elapsed.TotalMilliseconds)
             {
                 try
                 {
+                    sw2.Restart();
                     for (var j = 0; j < pipelining; j++)
                     {
                         worker.Write();
@@ -65,23 +74,21 @@ namespace Netling.Core
 
                     if (pipelining == 1)
                     {
-                        sw2[0].Restart();
                         var length = worker.Read();
-                        result.Add((int)Math.Floor(sw.Elapsed.TotalSeconds), length, (double)sw2[0].ElapsedTicks / Stopwatch.Frequency * 1000);
+                        result.Add((int)Math.Floor(sw.Elapsed.TotalSeconds), length, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000);
                     }
                     else
                     {
                         for (var j = 0; j < pipelining; j++)
                         {
-                            sw2[j].Restart();
                             var length = worker.ReadPipelined();
-                            result.Add((int)Math.Floor(sw.Elapsed.TotalSeconds), length, (double)sw2[j].ElapsedTicks / Stopwatch.Frequency * 1000);
+                            result.Add((int)Math.Floor(sw.Elapsed.TotalSeconds), length, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000);
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    result.AddError((int)Math.Floor(sw.Elapsed.TotalSeconds));
+                    result.AddError((int)Math.Floor(sw.Elapsed.TotalSeconds), (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000);
                 }
             }
 
