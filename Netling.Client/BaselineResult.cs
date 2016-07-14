@@ -7,7 +7,7 @@ namespace Netling.Client
 {
     public class BaselineResult
     {
-        public static BaselineResult Parse(JobResult result)
+        public static BaselineResult Parse(JobResult result, double[] responseTimes)
         {
             var tmp = new BaselineResult
             {
@@ -22,12 +22,12 @@ namespace Netling.Client
                 Errors = result.Errors,
             };
 
-            if (result.ResponseTimes.Any())
+            if (responseTimes.Any())
             {
-                tmp.Median = result.ResponseTimes.GetMedian();
-                tmp.StdDev = result.ResponseTimes.GetStdDev();
-                tmp.Min = result.ResponseTimes.Min();
-                tmp.Max = result.ResponseTimes.Max();
+                tmp.Median = responseTimes.GetMedian();
+                tmp.StdDev = responseTimes.GetStdDev();
+                tmp.Min = responseTimes.First();
+                tmp.Max = responseTimes.Last();
             }
 
             return tmp;

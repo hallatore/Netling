@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using Netling.Core.Models;
@@ -10,16 +11,23 @@ namespace Netling.Client
 {
     public partial class ResultWindow
     {
-        private readonly BaselineResult _result;
+        private BaselineResult _result;
         private readonly MainWindow _sender;
 
-        public ResultWindow(JobResult jobResult, MainWindow sender)
+        public ResultWindow(MainWindow sender)
         {
             _sender = sender;
             InitializeComponent();
+        }
 
-            _result = BaselineResult.Parse(jobResult);
-            LoadGraphs(jobResult);
+        public async Task Load(JobResult jobResult)
+        {
+
+            var taskResult = await GenerateAsync(jobResult);
+            _result = taskResult.Result;
+
+            RequestsPerSecondGraph.Draw(taskResult.Throughput);
+            HistogramGraph.Draw(taskResult.Latency);
 
             Title = "Netling - " + _result.Url;
             ThreadsValueUserControl.Value = _result.Threads.ToString();
@@ -39,31 +47,40 @@ namespace Netling.Client
                 LoadBaseline(_sender.BaselineResult);
         }
 
-        private void LoadGraphs(JobResult result)
+        private Task<JobTaskResult> GenerateAsync(JobResult jobResult)
         {
-            var max = (int)Math.Floor(result.ElapsedMilliseconds / 1000);
+            return Task.Run(() =>
+            {
+                var responseTimes = jobResult.ResponseTimes.ToArray();
+                Array.Sort(responseTimes);
+                var result = BaselineResult.Parse(jobResult, responseTimes);
+                var max = (int) Math.Floor(jobResult.ElapsedMilliseconds / 1000);
 
-            var dataPoints = result.Seconds
-                .Where(r => r.Key < max && r.Value.Count > 0)
-                .OrderBy(r => r.Key)
-                .Select(r => new DataPoint(r.Key, r.Value.Count));
+                var throughput = jobResult.Seconds
+                    .Where(r => r.Key < max && r.Value.Count > 0)
+                    .OrderBy(r => r.Key)
+                    .Select(r => new DataPoint(r.Key, r.Value.Count));
 
-            RequestsPerSecondGraph.Draw(dataPoints);
+                var latency = GenerateHistogram(responseTimes);
 
-            var h = GenerateHistogram(result.ResponseTimes);
-            HistogramGraph.Draw(h);
+                return new JobTaskResult
+                {
+                    Result = result,
+                    Throughput = throughput,
+                    Latency = latency
+                };
+            });
         }
 
-        private List<DataPoint> GenerateHistogram(List<double> responeTimes)
+        private List<DataPoint> GenerateHistogram(double[] responeTimes)
         {
             var result = new List<DataPoint>();
 
-            if (responeTimes == null || responeTimes.Count < 2)
+            if (responeTimes == null || responeTimes.Length < 2)
                 return result;
 
-            var input = responeTimes.OrderBy(r => r).ToList();
-            var max = input.Last();
-            var min = input.First();
+            var max = responeTimes.Last();
+            var min = responeTimes.First();
 
             var splits = 200;
             var divider = (max - min) / splits;
@@ -71,7 +88,7 @@ namespace Netling.Client
 
             for (var i = 0; i < splits; i++)
             {
-                result.Add(new DataPoint(step + (divider / 2), input.Count(r => r >= step && r < step + divider)));
+                result.Add(new DataPoint(step + (divider / 2), responeTimes.Count(r => r >= step && r < step + divider)));
                 step += divider;
             }
 
@@ -153,5 +170,12 @@ namespace Netling.Client
 
             return v1 > v2 ? new SolidColorBrush(Colors.Green) : new SolidColorBrush(Colors.Red);
         }
+    }
+
+    internal class JobTaskResult
+    {
+        public BaselineResult Result { get; set; }
+        public IEnumerable<DataPoint> Throughput { get; set; }
+        public List<DataPoint> Latency { get; set; }
     }
 }

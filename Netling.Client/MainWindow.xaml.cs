@@ -99,7 +99,10 @@ namespace Netling.Client
                 StatusProgressbar.Visibility = Visibility.Visible;
                 
                 _task = Task.Factory.StartNew(() => job.Process(threads, threadAfinity, pipelining, duration, url, cancellationToken), TaskCreationOptions.LongRunning);
-                _task.GetAwaiter().OnCompleted(JobCompleted);
+                _task.GetAwaiter().OnCompleted(async () =>
+                {
+                    await JobCompleted();
+                });
 
                 StartButton.Content = "Cancel";
                 _running = true;
@@ -132,19 +135,25 @@ namespace Netling.Client
             StartButton.Focus();
         }
 
-        private void JobCompleted()
+        private async Task JobCompleted()
         {
             Threads.IsEnabled = true;
             Duration.IsEnabled = true;
             Urls.IsEnabled = true;
-            StartButton.Content = "Run";
-            StatusProgressbar.Visibility = Visibility.Hidden;
+            StartButton.IsEnabled = false;
+            StartButton.Content = "Working";
             _cancellationTokenSource = null;
             _running = false;
 
-            var result = new ResultWindow(_task.Result, this);
+            var result = new ResultWindow(this);
+            StatusProgressbar.IsIndeterminate = true;
+            await result.Load(_task.Result);
+            StatusProgressbar.IsIndeterminate = false;
+            StatusProgressbar.Visibility = Visibility.Hidden;
             _task = null;
             result.Show();
+            StartButton.IsEnabled = true;
+            StartButton.Content = "Run";
         }
     }
 }
