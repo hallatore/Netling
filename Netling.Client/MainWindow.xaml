@@ -41,7 +41,7 @@
         </StackPanel>
         
         <TextBlock Text="URL" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,61,0,0"/>
-        <TextBox x:Name="Urls" Text="http://localhost:5000" VerticalAlignment="Stretch" KeyUp="Urls_OnKeyUp" HorizontalAlignment="Stretch" Padding="6" Margin="0,82,0,50" />
+        <TextBox x:Name="Urls" VerticalAlignment="Stretch" KeyUp="Urls_OnKeyUp" HorizontalAlignment="Stretch" Padding="6" Margin="0,82,0,50" />
 
         <Button Content="Run" x:Name="StartButton" Background="#ff0079c5" BorderThickness="0" Foreground="White" Click="StartButton_Click" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="100" Height="30"/>
         <ProgressBar x:Name="StatusProgressbar" VerticalAlignment="Bottom" Minimum="0" Maximum="100" HorizontalAlignment="Stretch" Visibility="Hidden" Height="16" Margin="120,0,0,7" />
