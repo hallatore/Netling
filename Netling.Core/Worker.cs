@@ -1,20 +1,35 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Netling.Core.Models;
 using Netling.Core.Performance;
-using System.Runtime.InteropServices;
+using Netling.Core.Utils;
 
 namespace Netling.Core
 {
-    public class PerformanceJob : IJob
+    public static class Worker
     {
-        public JobResult Process(int threads, bool threadAfinity, int pipelining, TimeSpan duration, string url, CancellationToken cancellationToken)
+        public static Task<WorkerResult> Run(string url, int threads, bool threadAfinity, int pipelining, TimeSpan duration, CancellationToken cancellationToken)
         {
-            var results = new ConcurrentQueue<JobResult>();
+            return Task.Run(() =>
+            {
+                var sw = new Stopwatch();
+                sw.Start();
+                var internalWorkerResult = QueueWorkerThreads(url, threads, threadAfinity, pipelining, duration, cancellationToken);
+                sw.Stop();
+                var workerResult = new WorkerResult(url, threads, threadAfinity, pipelining, sw.Elapsed);
+                workerResult.Process(internalWorkerResult);
+                return workerResult;
+            });
+        }
+
+        private static WorkerThreadResult QueueWorkerThreads(string url, int threads, bool threadAfinity, int pipelining, TimeSpan duration, CancellationToken cancellationToken)
+        {
+            var results = new ConcurrentQueue<WorkerThreadResult>();
             var events = new List<ManualResetEventSlim>();
             var sw = new Stopwatch();
             sw.Start();
@@ -23,7 +38,7 @@ namespace Netling.Core
             {
                 var resetEvent = new ManualResetEventSlim(false);
 
-                QueueThread(i, threadAfinity, () =>
+                ThreadHelper.QueueThread(i, threadAfinity, () =>
                 {
                     DoWork(url, duration, pipelining, results, sw, cancellationToken, resetEvent);
                 });
@@ -36,19 +51,13 @@ namespace Netling.Core
                 var group = events.Skip(i).Take(50).Select(r => r.WaitHandle).ToArray();
                 WaitHandle.WaitAll(group);
             }
-            
-            var result = JobResult.Merge(sw.Elapsed.TotalMilliseconds, results.ToList());
-            result.Url = url;
-            result.Threads = threads;
-            result.ThreadAfinity = threadAfinity;
-            result.Pipelining = pipelining;
-            return result;
+
+            return WorkerThreadResult.MergeResults(results.ToList());
         }
 
-        private void DoWork(string url, TimeSpan duration, int pipelining, ConcurrentQueue<JobResult> results, Stopwatch sw, CancellationToken cancellationToken, ManualResetEventSlim resetEvent)
+        private static void DoWork(string url, TimeSpan duration, int pipelining, ConcurrentQueue<WorkerThreadResult> results, Stopwatch sw, CancellationToken cancellationToken, ManualResetEventSlim resetEvent)
         {
-            Debug.WriteLine("Thread created");
-            var result = new JobResult();
+            var result = new WorkerThreadResult();
             var sw2 = new Stopwatch();
             var worker = new HttpWorker(url);
 
@@ -59,7 +68,7 @@ namespace Netling.Core
                 worker.Flush();
                 worker.Read();
             }
-            catch (Exception) {}
+            catch (Exception) { }
 
             while (!cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.Elapsed.TotalMilliseconds)
             {
@@ -95,49 +104,6 @@ namespace Netling.Core
 
             results.Enqueue(result);
             resetEvent.Set();
-        }
-
-        private void QueueThread(int i, bool useThreadAfinity, Action action)
-        {
-            var thread = new Thread(() => {
-                if (useThreadAfinity)
-                {
-                    Thread.BeginThreadAffinity();
-                    var afinity = GetAfinity(i + 1, Environment.ProcessorCount);
-                    CurrentThread.ProcessorAffinity = new IntPtr(1 << afinity);
-                }
-                
-                action.Invoke();
-
-                if (useThreadAfinity)
-                    Thread.EndThreadAffinity();
-            });
-            thread.Start();
-        }
-
-        [DllImport("kernel32.dll")]
-        public static extern int GetCurrentThreadId();
-
-        private ProcessThread CurrentThread
-        {
-            get
-            {
-                var id = GetCurrentThreadId();
-                return
-                    (from ProcessThread th in System.Diagnostics.Process.GetCurrentProcess().Threads
-                     where th.Id == id
-                     select th).Single();
-            }
-        }
-
-        private static int GetAfinity(int i, int cores)
-        {
-            var afinity = i * 2 % cores;
-
-            if (i % cores >= cores / 2)
-                afinity++;
-
-            return afinity;
         }
     }
 }

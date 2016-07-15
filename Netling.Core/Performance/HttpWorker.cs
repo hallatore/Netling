@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Netling.Core.Performance
 {
-    public class HttpWorker : IDisposable
+    internal class HttpWorker : IDisposable
     {
         private readonly Uri _uri;
         private readonly IPEndPoint _endPoint;

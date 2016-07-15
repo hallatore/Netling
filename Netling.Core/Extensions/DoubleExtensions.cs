@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 
-namespace Netling.Client.Extensions
+namespace Netling.Core.Extensions
 {
-    public static class DoubleExtensions
+    internal static class DoubleExtensions
     {
         public static double GetMedian(this double[] source)
         {

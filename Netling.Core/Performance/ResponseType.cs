@@ -1,6 +1,6 @@
 namespace Netling.Core.Performance
 {
-    public enum ResponseType
+    internal enum ResponseType
     {
         Unknown,
         Chunked,

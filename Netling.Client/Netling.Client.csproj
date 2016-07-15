@@ -89,8 +89,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="BaselineResult.cs" />
-    <Compile Include="Extensions\DoubleExtensions.cs" />
+    <Compile Include="ResultWindowItem.cs" />
     <Compile Include="LineGraphControl.xaml.cs">
       <DependentUpon>LineGraphControl.xaml</DependentUpon>
     </Compile>

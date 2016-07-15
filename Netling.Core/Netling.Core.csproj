@@ -42,10 +42,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IJob.cs" />
-    <Compile Include="PerformanceJob.cs" />
-    <Compile Include="Job.cs" />
-    <Compile Include="Models\JobResult.cs" />
+    <Compile Include="Extensions\DoubleExtensions.cs" />
+    <Compile Include="Models\Second.cs" />
+    <Compile Include="Models\WorkerThreadResult.cs" />
     <Compile Include="Performance\HttpHeaders.cs" />
     <Compile Include="Performance\HttpHelper.cs" />
     <Compile Include="Performance\HttpHelperChunked.cs" />
@@ -53,6 +52,9 @@
     <Compile Include="Performance\HttpWorker.cs" />
     <Compile Include="Performance\ResponseType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\ThreadHelper.cs" />
+    <Compile Include="Worker.cs" />
+    <Compile Include="Models\WorkerResult.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

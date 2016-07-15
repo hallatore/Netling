@@ -16,9 +16,9 @@ namespace Netling.Client
     {
         private bool _running;
         private CancellationTokenSource _cancellationTokenSource;
-        private Task<JobResult> _task;
+        private Task<WorkerResult> _task;
 
-        public BaselineResult BaselineResult { get; set; }
+        public ResultWindowItem ResultWindowItem { get; set; }
 
         public MainWindow()
         {
@@ -86,26 +86,23 @@ namespace Netling.Client
                     return;
 
                 var url = Urls.Text.Trim();
-
                 Threads.IsEnabled = false;
                 Duration.IsEnabled = false;
                 Urls.IsEnabled = false;
+                StartButton.Content = "Cancel";
+                _running = true;
 
                 _cancellationTokenSource = new CancellationTokenSource();
                 var cancellationToken = _cancellationTokenSource.Token;
-                var job = new PerformanceJob();
 
                 StatusProgressbar.Value = 0;
                 StatusProgressbar.Visibility = Visibility.Visible;
-                
-                _task = Task.Factory.StartNew(() => job.Process(threads, threadAfinity, pipelining, duration, url, cancellationToken), TaskCreationOptions.LongRunning);
+
+                _task = Worker.Run(url, threads, threadAfinity, pipelining, duration, cancellationToken);
                 _task.GetAwaiter().OnCompleted(async () =>
                 {
                     await JobCompleted();
                 });
-
-                StartButton.Content = "Cancel";
-                _running = true;
 
                 if (StatusProgressbar.IsIndeterminate)
                     return;
@@ -118,6 +115,9 @@ namespace Netling.Client
                     await Task.Delay(10);
                     StatusProgressbar.Value = 100.0 / duration.TotalMilliseconds * sw.Elapsed.TotalMilliseconds;
                 }
+
+                StatusProgressbar.IsIndeterminate = true;
+                StartButton.IsEnabled = false;
             }
             else
             {
@@ -141,17 +141,14 @@ namespace Netling.Client
             Duration.IsEnabled = true;
             Urls.IsEnabled = true;
             StartButton.IsEnabled = false;
-            StartButton.Content = "Working";
             _cancellationTokenSource = null;
             _running = false;
 
             var result = new ResultWindow(this);
-            StatusProgressbar.IsIndeterminate = true;
             await result.Load(_task.Result);
-            StatusProgressbar.IsIndeterminate = false;
-            StatusProgressbar.Visibility = Visibility.Hidden;
             _task = null;
             result.Show();
+            StatusProgressbar.Visibility = Visibility.Hidden;
             StartButton.IsEnabled = true;
             StartButton.Content = "Run";
         }

@@ -1,6 +1,6 @@
 ﻿namespace Netling.Core.Performance
 {
-    public static class HttpHelperContentLength
+    internal static class HttpHelperContentLength
     {
         public static int GetHeaderContentLength(byte[] buffer, int start, int end)
         {

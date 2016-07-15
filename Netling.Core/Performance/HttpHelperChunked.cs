@@ -1,8 +1,6 @@
-﻿using System.Net.Sockets;
-
-namespace Netling.Core.Performance
+﻿namespace Netling.Core.Performance
 {
-    public static class HttpHelperChunked
+    internal static class HttpHelperChunked
     {
         public static bool IsEndOfChunkedStream(byte[] buffer, int end)
         {

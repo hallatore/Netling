@@ -7,7 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Netling.Core.Performance
 {
-    public static class HttpHelper
+    internal static class HttpHelper
     {
         public static ResponseType GetResponseType(byte[] buffer, int start, int end)
         {

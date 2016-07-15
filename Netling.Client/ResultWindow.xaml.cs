@@ -11,7 +11,7 @@ namespace Netling.Client
 {
     public partial class ResultWindow
     {
-        private BaselineResult _result;
+        private ResultWindowItem _resultWindowItem;
         private readonly MainWindow _sender;
 
         public ResultWindow(MainWindow sender)
@@ -20,52 +20,50 @@ namespace Netling.Client
             InitializeComponent();
         }
 
-        public async Task Load(JobResult jobResult)
+        public async Task Load(WorkerResult workerResult)
         {
 
-            var taskResult = await GenerateAsync(jobResult);
-            _result = taskResult.Result;
+            var taskResult = await GenerateAsync(workerResult);
+            _resultWindowItem = taskResult.ResultWindowItem;
 
             RequestsPerSecondGraph.Draw(taskResult.Throughput);
             HistogramGraph.Draw(taskResult.Latency);
 
-            Title = "Netling - " + _result.Url;
-            ThreadsValueUserControl.Value = _result.Threads.ToString();
-            PipeliningValueUserControl.Value = _result.Pipelining.ToString();
-            ThreadAfinityValueUserControl.Value = _result.ThreadAfinity ? "ON" : "OFF";
+            Title = "Netling - " + _resultWindowItem.Url;
+            ThreadsValueUserControl.Value = _resultWindowItem.Threads.ToString();
+            PipeliningValueUserControl.Value = _resultWindowItem.Pipelining.ToString();
+            ThreadAfinityValueUserControl.Value = _resultWindowItem.ThreadAfinity ? "ON" : "OFF";
 
-            RequestsValueUserControl.Value = $"{_result.JobsPerSecond:#,0}";
-            ElapsedValueUserControl.Value = $"{_result.ElapsedSeconds:#,0}";
-            BandwidthValueUserControl.Value = $"{_result.Bandwidth:0}";
-            ErrorsValueUserControl.Value = _result.Errors.ToString();
-            MedianValueUserControl.Value = string.Format(_result.Median > 5 ? "{0:#,0}" : "{0:0.000}", _result.Median);
-            StdDevValueUserControl.Value = string.Format(_result.StdDev > 5 ? "{0:#,0}" : "{0:0.000}", _result.StdDev);
-            MinValueUserControl.Value = string.Format(_result.Min > 5 ? "{0:#,0}" : "{0:0.000}", _result.Min);
-            MaxValueUserControl.Value = string.Format(_result.Max > 5 ? "{0:#,0}" : "{0:0.000}", _result.Max);
+            RequestsValueUserControl.Value = $"{_resultWindowItem.JobsPerSecond:#,0}";
+            ElapsedValueUserControl.Value = $"{_resultWindowItem.ElapsedSeconds:#,0}";
+            BandwidthValueUserControl.Value = $"{_resultWindowItem.Bandwidth:0}";
+            ErrorsValueUserControl.Value = _resultWindowItem.Errors.ToString();
+            MedianValueUserControl.Value = string.Format(_resultWindowItem.Median > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.Median);
+            StdDevValueUserControl.Value = string.Format(_resultWindowItem.StdDev > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.StdDev);
+            MinValueUserControl.Value = string.Format(_resultWindowItem.Min > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.Min);
+            MaxValueUserControl.Value = string.Format(_resultWindowItem.Max > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.Max);
 
-            if (_sender.BaselineResult != null)
-                LoadBaseline(_sender.BaselineResult);
+            if (_sender.ResultWindowItem != null)
+                LoadBaseline(_sender.ResultWindowItem);
         }
 
-        private Task<JobTaskResult> GenerateAsync(JobResult jobResult)
+        private Task<JobTaskResult> GenerateAsync(WorkerResult workerResult)
         {
             return Task.Run(() =>
             {
-                var responseTimes = jobResult.ResponseTimes.ToArray();
-                Array.Sort(responseTimes);
-                var result = BaselineResult.Parse(jobResult, responseTimes);
-                var max = (int) Math.Floor(jobResult.ElapsedMilliseconds / 1000);
+                var result = ResultWindowItem.Parse(workerResult);
+                var max = (int) Math.Floor(workerResult.Elapsed.TotalMilliseconds / 1000);
 
-                var throughput = jobResult.Seconds
+                var throughput = workerResult.Seconds
                     .Where(r => r.Key < max && r.Value.Count > 0)
                     .OrderBy(r => r.Key)
                     .Select(r => new DataPoint(r.Key, r.Value.Count));
 
-                var latency = GenerateHistogram(responseTimes);
+                var latency = GenerateHistogram(workerResult.ResponseTimes);
 
                 return new JobTaskResult
                 {
-                    Result = result,
+                    ResultWindowItem = result,
                     Throughput = throughput,
                     Latency = latency
                 };
@@ -110,13 +108,13 @@ namespace Netling.Client
 
         private void UseBaseline(object sender, RoutedEventArgs e)
         {
-            _sender.BaselineResult = _result;
-            LoadBaseline(_sender.BaselineResult);
+            _sender.ResultWindowItem = _resultWindowItem;
+            LoadBaseline(_sender.ResultWindowItem);
         }
 
         private void ClearBaseline(object sender, RoutedEventArgs e)
         {
-            _sender.BaselineResult = null;
+            _sender.ResultWindowItem = null;
             ThreadsValueUserControl.BaselineValue = null;
             PipeliningValueUserControl.BaselineValue = null;
             ThreadAfinityValueUserControl.BaselineValue = null;
@@ -146,34 +144,34 @@ namespace Netling.Client
             MaxValueUserControl.ValueBrush = null;
         }
 
-        private void LoadBaseline(BaselineResult baseline)
+        private void LoadBaseline(ResultWindowItem baseline)
         {
             ThreadsValueUserControl.BaselineValue = baseline.Threads.ToString();
             PipeliningValueUserControl.BaselineValue = baseline.Pipelining.ToString();
             ThreadAfinityValueUserControl.BaselineValue = baseline.ThreadAfinity ? "ON" : "OFF";
 
             RequestsValueUserControl.BaselineValue = $"{baseline.JobsPerSecond:#,0}";
-            RequestsValueUserControl.ValueBrush = GetValueBrush(_result.JobsPerSecond, baseline.JobsPerSecond);
+            RequestsValueUserControl.ValueBrush = GetValueBrush(_resultWindowItem.JobsPerSecond, baseline.JobsPerSecond);
 
             ElapsedValueUserControl.BaselineValue = $"{baseline.ElapsedSeconds:#,0}";
 
             BandwidthValueUserControl.BaselineValue = $"{baseline.Bandwidth:0}";
-            BandwidthValueUserControl.ValueBrush = GetValueBrush(_result.Bandwidth, baseline.Bandwidth);
+            BandwidthValueUserControl.ValueBrush = GetValueBrush(_resultWindowItem.Bandwidth, baseline.Bandwidth);
 
             ErrorsValueUserControl.BaselineValue = baseline.Errors.ToString();
-            ErrorsValueUserControl.ValueBrush = GetValueBrush(baseline.Errors, _result.Errors);
+            ErrorsValueUserControl.ValueBrush = GetValueBrush(baseline.Errors, _resultWindowItem.Errors);
 
             MedianValueUserControl.BaselineValue = string.Format(baseline.Median > 5 ? "{0:#,0}" : "{0:0.000}", baseline.Median);
-            MedianValueUserControl.ValueBrush = GetValueBrush(baseline.Median, _result.Median);
+            MedianValueUserControl.ValueBrush = GetValueBrush(baseline.Median, _resultWindowItem.Median);
 
             StdDevValueUserControl.BaselineValue = string.Format(baseline.StdDev > 5 ? "{0:#,0}" : "{0:0.000}", baseline.StdDev);
-            StdDevValueUserControl.ValueBrush = GetValueBrush(baseline.StdDev, _result.StdDev);
+            StdDevValueUserControl.ValueBrush = GetValueBrush(baseline.StdDev, _resultWindowItem.StdDev);
 
             MinValueUserControl.BaselineValue = string.Format(baseline.Min > 5 ? "{0:#,0}" : "{0:0.000}", baseline.Min);
-            MinValueUserControl.ValueBrush = GetValueBrush(baseline.Min, _result.Min);
+            MinValueUserControl.ValueBrush = GetValueBrush(baseline.Min, _resultWindowItem.Min);
 
             MaxValueUserControl.BaselineValue = string.Format(baseline.Max > 5 ? "{0:#,0}" : "{0:0.000}", baseline.Max);
-            MaxValueUserControl.ValueBrush = GetValueBrush(baseline.Max, _result.Max);
+            MaxValueUserControl.ValueBrush = GetValueBrush(baseline.Max, _resultWindowItem.Max);
         }
 
         private Brush GetValueBrush(double v1, double v2)
@@ -187,7 +185,7 @@ namespace Netling.Client
 
     internal class JobTaskResult
     {
-        public BaselineResult Result { get; set; }
+        public ResultWindowItem ResultWindowItem { get; set; }
         public IEnumerable<DataPoint> Throughput { get; set; }
         public List<DataPoint> Latency { get; set; }
     }
