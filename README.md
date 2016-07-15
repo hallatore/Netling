@@ -1,13 +1,15 @@
 Netling is a load tester client for easy web testing. It is extremely fast while using little CPU or memory.
 
-###Requirements
+### Requirements
 .NET 4.6.1
 
-###Screenshots
+### Screenshots
 
 ![Client](http://i.imgur.com/uNwaVTu.png)
 
 ![Result window](http://i.imgur.com/hpTbHsq.png)
+
+![Console application](http://i.imgur.com/M3cty4N.png)
 
 ### License (MIT)
 
