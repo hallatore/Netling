@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,6 +7,7 @@ namespace Netling.Core.Models
     internal class WorkerThreadResult
     {
         public Dictionary<int, Second> Seconds { get; private set; }
+        public TimeSpan Elapsed { get; private set; }
 
         public WorkerThreadResult()
         {
@@ -37,9 +39,10 @@ namespace Netling.Core.Models
             GetItem(elapsed).AddMerged(bytes, responseTimes, count, errorCount);
         }
 
-        public static WorkerThreadResult MergeResults(IReadOnlyList<WorkerThreadResult> results)
+        public static WorkerThreadResult MergeResults(IReadOnlyList<WorkerThreadResult> results, TimeSpan elapsed)
         {
             var result = new WorkerThreadResult();
+            result.Elapsed = elapsed;
             var tmp = results.SelectMany(c => c.Seconds).ToList();
 
             foreach (var item in tmp)

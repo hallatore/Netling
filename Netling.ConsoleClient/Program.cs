@@ -80,7 +80,7 @@ Running {0}s test @ {1}
     Thread afinity: {4}";
 
         private const string ResultString = @"
-{0} requests in {1:#,0.##}s
+{0:#,0} requests in {1:#,0.##}s
     Requests/sec:   {2:#,0}
     Bandwidth:      {3:#,0} mbit
     Errors:         {4:#,0}

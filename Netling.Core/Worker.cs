@@ -17,11 +17,8 @@ namespace Netling.Core
         {
             return Task.Run(() =>
             {
-                var sw = new Stopwatch();
-                sw.Start();
                 var internalWorkerResult = QueueWorkerThreads(url, threads, threadAfinity, pipelining, duration, cancellationToken);
-                sw.Stop();
-                var workerResult = new WorkerResult(url, threads, threadAfinity, pipelining, sw.Elapsed);
+                var workerResult = new WorkerResult(url, threads, threadAfinity, pipelining, internalWorkerResult.Elapsed);
                 workerResult.Process(internalWorkerResult);
                 return workerResult;
             });
@@ -51,8 +48,9 @@ namespace Netling.Core
                 var group = events.Skip(i).Take(50).Select(r => r.WaitHandle).ToArray();
                 WaitHandle.WaitAll(group);
             }
+            sw.Stop();
 
-            return WorkerThreadResult.MergeResults(results.ToList());
+            return WorkerThreadResult.MergeResults(results.ToList(), sw.Elapsed);
         }
 
         private static void DoWork(string url, TimeSpan duration, int pipelining, ConcurrentQueue<WorkerThreadResult> results, Stopwatch sw, CancellationToken cancellationToken, ManualResetEventSlim resetEvent)
