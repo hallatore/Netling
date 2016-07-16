@@ -91,29 +91,56 @@ namespace Netling.Core.Performance
                 _responseType = HttpHelper.GetResponseType(_buffer, 0, _read);
             }
 
-            var length = _read - _streamIndex;
-            var responseLength = HttpHelperContentLength.GetResponseLength(_buffer, _streamIndex, _read);
-
-            // Happens if we cut the response at a bad place ...
-            while (responseLength < 0)
+            if (_responseType == ResponseType.ContentLength)
             {
-                Array.Copy(_buffer, 0, _tmpBuffer, 0, _buffer.Length);
-                var tmpRead = _read;
-                _read = _client.Client.Receive(_buffer);
-                length += _read;
-                Array.Copy(_buffer, 0, _tmpBuffer, tmpRead, _read);
-                responseLength = HttpHelperContentLength.GetResponseLength(_tmpBuffer, _streamIndex, tmpRead + _read);
+                var length = _read - _streamIndex;
+                var responseLength = HttpHelperContentLength.GetResponseLength(_buffer, _streamIndex, _read);
+
+                // Happens if we cut the response at a bad place ...
+                while (responseLength < 0)
+                {
+                    Array.Copy(_buffer, 0, _tmpBuffer, 0, _buffer.Length);
+                    var tmpRead = _read;
+                    _read = _client.Client.Receive(_buffer);
+                    length += _read;
+                    Array.Copy(_buffer, 0, _tmpBuffer, tmpRead, _read);
+                    responseLength = HttpHelperContentLength.GetResponseLength(_tmpBuffer, _streamIndex, tmpRead + _read);
+                }
+
+                while (length < responseLength)
+                {
+                    _read = _client.Client.Receive(_buffer);
+                    length += _read;
+                }
+
+                var end = _read - (length - responseLength);
+                _streamIndex = _read > end ? end : 0;
+                return responseLength;
             }
 
-            while (length < responseLength)
+            if (_responseType == ResponseType.Chunked)
             {
-                _read = _client.Client.Receive(_buffer);
-                length += _read;
+                var length = 0;
+                var streamEnd = HttpHelperChunked.SeekEndOfChunkedStream(_buffer, _streamIndex, _read);
+
+                if (streamEnd >= 0)
+                    length = streamEnd - _streamIndex;
+
+                while (streamEnd < 0)
+                {
+                    _read = _client.Client.Receive(_buffer);
+                    length += _read;
+                    streamEnd = HttpHelperChunked.SeekEndOfChunkedStream(_buffer, 0, _read);
+
+                    if (streamEnd >= 0)
+                        length += streamEnd;
+                }
+
+                _streamIndex = _read > streamEnd ? streamEnd : 0;
+                return length;
             }
 
-            var end = _read - (length - responseLength);
-            _streamIndex = _read > end ? end : 0;
-            return responseLength;
+            return -1;
         }
 
         private void InitClient()

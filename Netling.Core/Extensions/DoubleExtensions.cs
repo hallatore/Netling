@@ -8,19 +8,16 @@ namespace Netling.Core.Extensions
         public static double GetMedian(this double[] source)
         {
             var count = source.Length;
+
             if (count == 0)
-            {
                 return 0;
-            }
 
-            if (count % 2 == 0)
-            {
-                var a = source[count / 2 - 1];
-                var b = source[count / 2];
-                return (a + b) / 2;
-            }
+            if (count % 2 != 0)
+                return source[count / 2];
 
-            return source[count / 2];
+            var a = source[count / 2 - 1];
+            var b = source[count / 2];
+            return (a + b) / 2;
         }
 
         public static double GetStdDev(this double[] source)
