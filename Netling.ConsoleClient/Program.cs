@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NDesk.Options;
 using Netling.Core;
+using Netling.Core.Models;
 
 namespace Netling.ConsoleClient
 {
@@ -56,7 +57,30 @@ namespace Netling.ConsoleClient
                 result.Median,
                 result.StdDev,
                 result.Min,
-                result.Max);
+                result.Max,
+                GetAsciiHistogram(result));
+        }
+
+        private static string GetAsciiHistogram(WorkerResult workerResult)
+        {
+            const string filled = "█";
+            const string empty = " ";
+            var histogramText = new string[7];
+            var max = workerResult.Histogram.Max();
+
+            foreach (var t in workerResult.Histogram)
+            {
+                for (var j = 0; j < histogramText.Length; j++)
+                {
+                    histogramText[j] += t > max / histogramText.Length * (histogramText.Length - j - 1) ? filled : empty;
+                }
+            }
+
+            var text = string.Join("\r\n", histogramText);
+            var minText = string.Format("{0:0.000} ms ", workerResult.Min);
+            var maxText = string.Format(" {0:0.000} ms", workerResult.Max);
+            text += "\r\n" + minText + new string('=', workerResult.Histogram.Length - minText.Length - maxText.Length) + maxText;
+            return text;
         }
 
         private const string HelpString = @"
@@ -89,6 +113,8 @@ Latency
     StdDev:         {6:0.000} ms
     Min:            {7:0.000} ms
     Max:            {8:0.000} ms
+
+{9}
 ";
     }
 }

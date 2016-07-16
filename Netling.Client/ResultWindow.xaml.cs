@@ -27,7 +27,7 @@ namespace Netling.Client
             _resultWindowItem = taskResult.ResultWindowItem;
 
             RequestsPerSecondGraph.Draw(taskResult.Throughput);
-            HistogramGraph.Draw(taskResult.Latency);
+            HistogramGraph.Draw(workerResult.Histogram.Select((count, i) => new DataPoint(i, count)).ToList());
 
             Title = "Netling - " + _resultWindowItem.Url;
             ThreadsValueUserControl.Value = _resultWindowItem.Threads.ToString();
@@ -59,51 +59,12 @@ namespace Netling.Client
                     .OrderBy(r => r.Key)
                     .Select(r => new DataPoint(r.Key, r.Value.Count));
 
-                var latency = GenerateHistogram(workerResult.ResponseTimes);
-
                 return new JobTaskResult
                 {
                     ResultWindowItem = result,
-                    Throughput = throughput,
-                    Latency = latency
+                    Throughput = throughput
                 };
             });
-        }
-
-        private List<DataPoint> GenerateHistogram(double[] responeTimes)
-        {
-            var result = new List<DataPoint>();
-
-            if (responeTimes == null || responeTimes.Length < 2)
-                return result;
-
-            var max = responeTimes.Last();
-            var min = responeTimes.First();
-
-            var splits = 200;
-            var divider = (max - min) / splits;
-            var step = min;
-            var y = 0;
-
-            for (var i = 0; i < splits; i++)
-            {
-                var count = 0;
-                var stepMax = step + divider;
-
-                if (i + 1 == splits)
-                    stepMax = double.MaxValue;
-
-                while (y < responeTimes.Length && responeTimes[y] < stepMax)
-                {
-                    y++;
-                    count++;
-                }
-
-                result.Add(new DataPoint(step + (divider / 2), count));
-                step += divider;
-            }
-
-            return result;
         }
 
         private void UseBaseline(object sender, RoutedEventArgs e)
@@ -187,6 +148,5 @@ namespace Netling.Client
     {
         public ResultWindowItem ResultWindowItem { get; set; }
         public IEnumerable<DataPoint> Throughput { get; set; }
-        public List<DataPoint> Latency { get; set; }
     }
 }

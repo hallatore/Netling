@@ -9,7 +9,7 @@ Netling is a load tester client for easy web testing. It is extremely fast while
 
 ![Result window](http://i.imgur.com/hpTbHsq.png)
 
-![Console application](http://i.imgur.com/M3cty4N.png)
+![Console application](http://i.imgur.com/8gbPkxK.png)
 
 ### License (MIT)
 

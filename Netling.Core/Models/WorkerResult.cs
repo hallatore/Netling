@@ -34,6 +34,7 @@ namespace Netling.Core.Models
         public double StdDev { get; private set; }
         public double Min { get; private set; }
         public double Max { get; private set; }
+        public int[] Histogram { get; private set; }
 
         public double Bandwidth
         {
@@ -57,6 +58,42 @@ namespace Netling.Core.Models
             StdDev = ResponseTimes.GetStdDev();
             Min = ResponseTimes.First();
             Max = ResponseTimes.Last();
+            Histogram = GenerateHistogram(ResponseTimes);
+        }
+
+        private int[] GenerateHistogram(double[] responeTimes)
+        {
+            var splits = 80;
+            var result = new int[splits];
+
+            if (responeTimes == null || responeTimes.Length < 2)
+                return result;
+
+            var max = responeTimes.Last();
+            var min = responeTimes.First();
+            var divider = (max - min) / splits;
+            var step = min;
+            var y = 0;
+
+            for (var i = 0; i < splits; i++)
+            {
+                var count = 0;
+                var stepMax = step + divider;
+
+                if (i + 1 == splits)
+                    stepMax = double.MaxValue;
+
+                while (y < responeTimes.Length && responeTimes[y] < stepMax)
+                {
+                    y++;
+                    count++;
+                }
+
+                result[i] = count;
+                step += divider;
+            }
+
+            return result;
         }
     }
 }
