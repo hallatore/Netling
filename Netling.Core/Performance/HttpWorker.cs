@@ -58,7 +58,7 @@ namespace Netling.Core.Performance
 
         public int Read(out int statusCode)
         {
-            var read = _client.Client.Receive(_buffer);
+            var read = _stream.Read(_buffer, 0, _buffer.Length);
             var length = read;
             statusCode = HttpHelper.GetStatusCode(_buffer, 0, read);
             _responseType = HttpHelper.GetResponseType(_buffer, 0, read);
@@ -69,14 +69,14 @@ namespace Netling.Core.Performance
 
                 while (length < responseLength)
                 {
-                    length += _client.Client.Receive(_buffer);
+                    length += _stream.Read(_buffer, 0, _buffer.Length);
                 }
             }
             else if (_responseType == ResponseType.Chunked)
             {
                 while (!HttpHelperChunked.IsEndOfChunkedStream(_buffer, read))
                 {
-                    read = _client.Client.Receive(_buffer);
+                    read = _stream.Read(_buffer, 0, _buffer.Length);
                     length += read;
                 }
             }
@@ -93,7 +93,7 @@ namespace Netling.Core.Performance
         {
             if (_streamIndex == 0)
             {
-                _read = _client.Client.Receive(_buffer);
+                _read = _stream.Read(_buffer, 0, _buffer.Length);
                 _responseType = HttpHelper.GetResponseType(_buffer, 0, _read);
             }
 
@@ -109,7 +109,7 @@ namespace Netling.Core.Performance
                 {
                     Array.Copy(_buffer, 0, _tmpBuffer, 0, _buffer.Length);
                     var tmpRead = _read;
-                    _read = _client.Client.Receive(_buffer);
+                    _read = _stream.Read(_buffer, 0, _buffer.Length);
                     length += _read;
                     Array.Copy(_buffer, 0, _tmpBuffer, tmpRead, _read);
                     responseLength = HttpHelperContentLength.GetResponseLength(_tmpBuffer, _streamIndex, tmpRead + _read);
@@ -117,7 +117,7 @@ namespace Netling.Core.Performance
 
                 while (length < responseLength)
                 {
-                    _read = _client.Client.Receive(_buffer);
+                    _read = _stream.Read(_buffer, 0, _buffer.Length);
                     length += _read;
                 }
 
@@ -135,7 +135,7 @@ namespace Netling.Core.Performance
 
                 while (streamEnd < 0)
                 {
-                    _read = _client.Client.Receive(_buffer);
+                    _read = _stream.Read(_buffer, 0, _buffer.Length);
                     length += _read;
                     streamEnd = HttpHelperChunked.SeekEndOfChunkedStream(_buffer, 0, _read);
 
