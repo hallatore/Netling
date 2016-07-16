@@ -13,18 +13,18 @@ namespace Netling.Core
 {
     public static class Worker
     {
-        public static Task<WorkerResult> Run(string url, int threads, bool threadAfinity, int pipelining, TimeSpan duration, CancellationToken cancellationToken)
+        public static Task<WorkerResult> Run(Uri uri, int threads, bool threadAfinity, int pipelining, TimeSpan duration, CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {
-                var internalWorkerResult = QueueWorkerThreads(url, threads, threadAfinity, pipelining, duration, cancellationToken);
-                var workerResult = new WorkerResult(url, threads, threadAfinity, pipelining, internalWorkerResult.Elapsed);
+                var internalWorkerResult = QueueWorkerThreads(uri, threads, threadAfinity, pipelining, duration, cancellationToken);
+                var workerResult = new WorkerResult(uri, threads, threadAfinity, pipelining, internalWorkerResult.Elapsed);
                 workerResult.Process(internalWorkerResult);
                 return workerResult;
             });
         }
 
-        private static WorkerThreadResult QueueWorkerThreads(string url, int threads, bool threadAfinity, int pipelining, TimeSpan duration, CancellationToken cancellationToken)
+        private static WorkerThreadResult QueueWorkerThreads(Uri uri, int threads, bool threadAfinity, int pipelining, TimeSpan duration, CancellationToken cancellationToken)
         {
             var results = new ConcurrentQueue<WorkerThreadResult>();
             var events = new List<ManualResetEventSlim>();
@@ -37,7 +37,7 @@ namespace Netling.Core
 
                 ThreadHelper.QueueThread(i, threadAfinity, () =>
                 {
-                    DoWork(url, duration, pipelining, results, sw, cancellationToken, resetEvent);
+                    DoWork(uri, duration, pipelining, results, sw, cancellationToken, resetEvent);
                 });
 
                 events.Add(resetEvent);
@@ -53,18 +53,19 @@ namespace Netling.Core
             return WorkerThreadResult.MergeResults(results.ToList(), sw.Elapsed);
         }
 
-        private static void DoWork(string url, TimeSpan duration, int pipelining, ConcurrentQueue<WorkerThreadResult> results, Stopwatch sw, CancellationToken cancellationToken, ManualResetEventSlim resetEvent)
+        private static void DoWork(Uri uri, TimeSpan duration, int pipelining, ConcurrentQueue<WorkerThreadResult> results, Stopwatch sw, CancellationToken cancellationToken, ManualResetEventSlim resetEvent)
         {
             var result = new WorkerThreadResult();
             var sw2 = new Stopwatch();
-            var worker = new HttpWorker(url);
+            var worker = new HttpWorker(uri);
 
             // Priming connection ...
             try
             {
+                int tmpStatusCode;
                 worker.Write();
                 worker.Flush();
-                worker.Read();
+                worker.Read(out tmpStatusCode);
             }
             catch (Exception) { }
 
@@ -82,21 +83,23 @@ namespace Netling.Core
 
                     if (pipelining == 1)
                     {
-                        var length = worker.Read();
-                        result.Add((int)Math.Floor(sw.Elapsed.TotalSeconds), length, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000);
+                        int statusCode;
+                        var length = worker.Read(out statusCode);
+                        result.Add((int)Math.Floor(sw.Elapsed.TotalSeconds), length, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, statusCode);
                     }
                     else
                     {
                         for (var j = 0; j < pipelining; j++)
                         {
-                            var length = worker.ReadPipelined();
-                            result.Add((int)Math.Floor(sw.Elapsed.TotalSeconds), length, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000);
+                            int statusCode;
+                            var length = worker.ReadPipelined(out statusCode);
+                            result.Add((int)Math.Floor(sw.Elapsed.TotalSeconds), length, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, statusCode);
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    result.AddError((int)Math.Floor(sw.Elapsed.TotalSeconds), (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000);
+                    result.AddError((int)Math.Floor(sw.Elapsed.TotalSeconds), (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, ex);
                 }
             }
 

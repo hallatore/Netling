@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using Netling.Core.Exceptions;
 
 namespace Netling.Core.Performance
 {
@@ -20,14 +21,14 @@ namespace Netling.Core.Performance
         private int _read;
         private ResponseType _responseType;
 
-        public HttpWorker(string url)
+        public HttpWorker(Uri uri)
         {
             _buffer = new byte[4096];
             _tmpBuffer = new byte[_buffer.Length * 2];
             _streamIndex = 0;
             _read = 0;
             _responseType = ResponseType.Unknown;
-            _uri = new Uri(url, UriKind.Absolute);
+            _uri = uri;
             IPAddress ip;
 
             if (_uri.HostNameType == UriHostNameType.Dns)
@@ -55,10 +56,11 @@ namespace Netling.Core.Performance
             _stream.Flush();
         }
 
-        public int Read()
+        public int Read(out int statusCode)
         {
             var read = _client.Client.Receive(_buffer);
             var length = read;
+            statusCode = HttpHelper.GetStatusCode(_buffer, 0, read);
             _responseType = HttpHelper.GetResponseType(_buffer, 0, read);
 
             if (_responseType == ResponseType.ContentLength)
@@ -78,18 +80,24 @@ namespace Netling.Core.Performance
                     length += read;
                 }
             }
+            else
+            {
+                throw new UnknownResponseTypeException();
+            }
 
             return length;
         }
 
-        // experimental ... Chunked transfer do NOT work yet!
-        public int ReadPipelined()
+        // experimental ...
+        public int ReadPipelined(out int statusCode)
         {
             if (_streamIndex == 0)
             {
                 _read = _client.Client.Receive(_buffer);
                 _responseType = HttpHelper.GetResponseType(_buffer, 0, _read);
             }
+
+            statusCode = HttpHelper.GetStatusCode(_buffer, _streamIndex, _read);
 
             if (_responseType == ResponseType.ContentLength)
             {
@@ -117,8 +125,7 @@ namespace Netling.Core.Performance
                 _streamIndex = _read > end ? end : 0;
                 return responseLength;
             }
-
-            if (_responseType == ResponseType.Chunked)
+            else if (_responseType == ResponseType.Chunked)
             {
                 var length = 0;
                 var streamEnd = HttpHelperChunked.SeekEndOfChunkedStream(_buffer, _streamIndex, _read);
@@ -139,8 +146,10 @@ namespace Netling.Core.Performance
                 _streamIndex = _read > streamEnd ? streamEnd : 0;
                 return length;
             }
-
-            return -1;
+            else
+            {
+                throw new UnknownResponseTypeException();
+            }
         }
 
         private void InitClient()

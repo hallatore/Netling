@@ -4,6 +4,7 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
+using Netling.Core.Extensions;
 
 namespace Netling.Core.Performance
 {
@@ -21,6 +22,11 @@ namespace Netling.Core.Performance
                 return ResponseType.Chunked;
 
             return ResponseType.Unknown;
+        }
+
+        public static int GetStatusCode(byte[] buffer, int start, int end)
+        {
+            return buffer.ConvertToInt(start + 9, 3);
         }
 
         // HTTP/1.1 200 OK\r\nDate: Wed, 06 Jul 2016 18:26:27 GMT\r\nContent-Length: 13\r\nContent-Type: text/plain\r\nServer: Kestrel\r\n\r\nHello, World!

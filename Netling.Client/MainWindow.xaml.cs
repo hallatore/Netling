@@ -85,7 +85,11 @@ namespace Netling.Client
                 if (string.IsNullOrWhiteSpace(Urls.Text))
                     return;
 
-                var url = Urls.Text.Trim();
+                Uri uri;
+
+                if (!Uri.TryCreate(Urls.Text.Trim(), UriKind.Absolute, out uri))
+                    return;
+                
                 Threads.IsEnabled = false;
                 Duration.IsEnabled = false;
                 Urls.IsEnabled = false;
@@ -98,7 +102,7 @@ namespace Netling.Client
                 StatusProgressbar.Value = 0;
                 StatusProgressbar.Visibility = Visibility.Visible;
 
-                _task = Worker.Run(url, threads, threadAfinity, pipelining, duration, cancellationToken);
+                _task = Worker.Run(uri, threads, threadAfinity, pipelining, duration, cancellationToken);
                 _task.GetAwaiter().OnCompleted(async () =>
                 {
                     await JobCompleted();
@@ -115,6 +119,9 @@ namespace Netling.Client
                     await Task.Delay(10);
                     StatusProgressbar.Value = 100.0 / duration.TotalMilliseconds * sw.Elapsed.TotalMilliseconds;
                 }
+
+                if (!_running)
+                    return;
 
                 StatusProgressbar.IsIndeterminate = true;
                 StartButton.IsEnabled = false;
@@ -137,12 +144,12 @@ namespace Netling.Client
 
         private async Task JobCompleted()
         {
+            _running = false;
             Threads.IsEnabled = true;
             Duration.IsEnabled = true;
             Urls.IsEnabled = true;
             StartButton.IsEnabled = false;
             _cancellationTokenSource = null;
-            _running = false;
 
             var result = new ResultWindow(this);
             await result.Load(_task.Result);

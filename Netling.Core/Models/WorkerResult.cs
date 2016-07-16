@@ -7,13 +7,18 @@ namespace Netling.Core.Models
 {
     public class WorkerResult
     {
-        public WorkerResult(string url, int threads, bool threadAfinity, int pipelining, TimeSpan elapsed)
+        public WorkerResult(Uri uri, int threads, bool threadAfinity, int pipelining, TimeSpan elapsed)
         {
-            Url = url;
+            Url = uri.ToString();
             Threads = threads;
             ThreadAfinity = threadAfinity;
             Pipelining = pipelining;
             Elapsed = elapsed;
+            Seconds = new Dictionary<int, Second>();
+            ResponseTimes = new double[0];
+            Histogram = new int[0];
+            StatusCodes = new Dictionary<int, int>();
+            Exceptions = new Dictionary<Type, int>();
         }
 
         public string Url { get; private set; }
@@ -28,6 +33,8 @@ namespace Netling.Core.Models
         public double BytesPrSecond { get; private set; }
 
         public double[] ResponseTimes { get; private set; }
+        public Dictionary<int, int> StatusCodes { get; private set; }
+        public Dictionary<Type, int> Exceptions { get; private set; }
         public Dictionary<int, Second> Seconds { get; set; }
 
         public double Median { get; private set; }
@@ -46,10 +53,27 @@ namespace Netling.Core.Models
             Seconds = wtResult.Seconds;
             var items = wtResult.Seconds.Select(r => r.Value).DefaultIfEmpty(new Second(0)).ToList();
             Count = items.Sum(s => s.Count);
-            Errors = items.Sum(s => s.ErrorCount);
             RequestsPerSecond = Count / (Elapsed.TotalMilliseconds / 1000);
             BytesPrSecond = items.Sum(s => s.Bytes) / (Elapsed.TotalMilliseconds / 1000);
             ResponseTimes = items.SelectMany(s => s.ResponseTimes).OrderBy(r => r).ToArray();
+
+            foreach (var statusCode in items.SelectMany(s => s.StatusCodes))
+            {
+                if (StatusCodes.ContainsKey(statusCode.Key))
+                    StatusCodes[statusCode.Key] += statusCode.Value;
+                else
+                    StatusCodes.Add(statusCode.Key, statusCode.Value);
+            }
+
+            foreach (var exception in items.SelectMany(s => s.Exceptions))
+            {
+                if (Exceptions.ContainsKey(exception.Key))
+                    Exceptions[exception.Key] += exception.Value;
+                else
+                    Exceptions.Add(exception.Key, exception.Value);
+            }
+
+            Errors = StatusCodes.Where(s => s.Key >= 400).Sum(s => s.Value) + Exceptions.Sum(e => e.Value);
 
             if (!ResponseTimes.Any())
                 return;

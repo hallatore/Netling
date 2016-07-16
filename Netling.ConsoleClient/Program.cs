@@ -31,9 +31,12 @@ namespace Netling.ConsoleClient
             var extraArgs = p.Parse(args);
             var threadAfinity = extraArgs.Contains("-a");
             var url = extraArgs.FirstOrDefault(e => e.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || e.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
+            Uri uri = null;
 
-            if (url != null)
-                Run(url, threads, threadAfinity, pipelining, TimeSpan.FromSeconds(duration)).Wait();
+            if (url != null && !Uri.TryCreate(url, UriKind.Absolute, out uri))
+                Console.WriteLine("Failed to parse URL");
+            else if (url != null)
+                Run(uri, threads, threadAfinity, pipelining, TimeSpan.FromSeconds(duration)).Wait();
             else
                 ShowHelp();
         }
@@ -43,10 +46,10 @@ namespace Netling.ConsoleClient
             Console.WriteLine(HelpString);
         }
 
-        private static async Task Run(string url, int threads, bool threadAfinity, int pipelining, TimeSpan duration)
+        private static async Task Run(Uri uri, int threads, bool threadAfinity, int pipelining, TimeSpan duration)
         {
-            Console.WriteLine(StartRunString, duration.TotalSeconds, url, threads, pipelining, threadAfinity ? "ON" : "OFF");
-            var result = await Worker.Run(url, threads, threadAfinity, pipelining, duration, new CancellationToken());
+            Console.WriteLine(StartRunString, duration.TotalSeconds, uri, threads, pipelining, threadAfinity ? "ON" : "OFF");
+            var result = await Worker.Run(uri, threads, threadAfinity, pipelining, duration, new CancellationToken());
 
             Console.WriteLine(ResultString, 
                 result.Count,
@@ -84,7 +87,7 @@ namespace Netling.ConsoleClient
         }
 
         private const string HelpString = @"
-Usage: netling [-t threads] [-d duration] [-p pipelining] [-a]
+Usage: netling [-t threads] [-d duration] [-p pipelining] [-a] url
 
 Options:
     -t count        Number of threads to spawn.
@@ -93,7 +96,7 @@ Options:
     -a              Use thread afinity on the worker threads.
 
 Examples: 
-    netling -t 8 -d 60 -p 10 -a http://localhost
+    netling -t 8 -d 60 http://localhost
     netling http://localhost
 ";
 

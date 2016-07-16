@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\ByteExtensions.cs" />
     <Compile Include="Extensions\DoubleExtensions.cs" />
     <Compile Include="Models\Second.cs" />
     <Compile Include="Models\WorkerThreadResult.cs" />
@@ -51,6 +52,7 @@
     <Compile Include="Performance\HttpHelperContentLength.cs" />
     <Compile Include="Performance\HttpWorker.cs" />
     <Compile Include="Performance\ResponseType.cs" />
+    <Compile Include="Exceptions\UnknownResponseTypeException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\ThreadHelper.cs" />
     <Compile Include="Worker.cs" />

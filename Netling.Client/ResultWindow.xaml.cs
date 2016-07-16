@@ -43,6 +43,20 @@ namespace Netling.Client
             MinValueUserControl.Value = string.Format(_resultWindowItem.Min > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.Min);
             MaxValueUserControl.Value = string.Format(_resultWindowItem.Max > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.Max);
 
+            var errors = new Dictionary<string, int>();
+
+            foreach (var statusCode in workerResult.StatusCodes.Where(s => s.Key >= 400))
+            {
+                errors.Add(statusCode.Key.ToString(), statusCode.Value);
+            }
+
+            foreach (var exception in workerResult.Exceptions)
+            {
+                errors.Add(exception.Key.ToString(), exception.Value);
+            }
+
+            ErrorsListView.ItemsSource = errors;
+
             if (_sender.ResultWindowItem != null)
                 LoadBaseline(_sender.ResultWindowItem);
         }

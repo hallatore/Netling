@@ -1,4 +1,6 @@
-﻿namespace Netling.Core.Performance
+﻿using Netling.Core.Extensions;
+
+namespace Netling.Core.Performance
 {
     internal static class HttpHelperContentLength
     {
@@ -7,19 +9,7 @@
             int index;
             int length;
             HttpHelper.SeekHeader(buffer, HttpHeaders.ContentLength, start, end, out index, out length);
-            return ConvertToInt(buffer, index, length);
-        }
-
-        private static int ConvertToInt(byte[] bytes, int start, int length)
-        {
-            var result = 0;
-
-            for (var i = 0; i < length; i++)
-            {
-                result = result * 10 + (bytes[start + i] - '0');
-            }
-
-            return result;
+            return buffer.ConvertToInt(index, length);
         }
 
         public static int GetResponseLength(byte[] buffer, int start, int end)

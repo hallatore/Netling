@@ -14,14 +14,14 @@ namespace Netling.Core.Models
             Seconds = new Dictionary<int, Second>();
         }
 
-        public void Add(int elapsed, long bytes, double responsetime)
+        public void Add(int elapsed, long bytes, double responsetime, int statusCode)
         {
-            GetItem(elapsed).Add(bytes, responsetime);
+            GetItem(elapsed).Add(bytes, responsetime, statusCode);
         }
 
-        public void AddError(int elapsed, double responsetime)
+        public void AddError(int elapsed, double responsetime, Exception exception)
         {
-            GetItem(elapsed).AddError(responsetime);
+            GetItem(elapsed).AddError(responsetime, exception);
         }
 
         private Second GetItem(int elapsed)
@@ -34,9 +34,9 @@ namespace Netling.Core.Models
             return second;
         }
 
-        private void AddMerged(int elapsed, long bytes, List<double> responseTimes, long count, long errorCount)
+        private void AddMerged(Second second)
         {
-            GetItem(elapsed).AddMerged(bytes, responseTimes, count, errorCount);
+            GetItem(second.Elapsed).AddMerged(second);
         }
 
         public static WorkerThreadResult MergeResults(IReadOnlyList<WorkerThreadResult> results, TimeSpan elapsed)
@@ -47,7 +47,7 @@ namespace Netling.Core.Models
 
             foreach (var item in tmp)
             {
-                result.AddMerged(item.Value.Elapsed, item.Value.Bytes, item.Value.ResponseTimes, item.Value.Count, item.Value.ErrorCount);
+                result.AddMerged(item.Value);
             }
 
             return result;
