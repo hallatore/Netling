@@ -45,7 +45,7 @@
             <TabItem Header="REQUEST THROUGHPUT" FontSize="11">
                 <client:LineGraphControl x:Name="RequestsPerSecondGraph"/>
             </TabItem>
-            <TabItem Header="ERRORS" FontSize="11">
+            <TabItem Header="STATUS CODES &amp; EXCEPTIONS" FontSize="11">
                 <ListView Margin="10" Name="ErrorsListView">
                     <ListView.View>
                         <GridView>

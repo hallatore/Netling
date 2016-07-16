@@ -45,7 +45,7 @@ namespace Netling.Client
 
             var errors = new Dictionary<string, int>();
 
-            foreach (var statusCode in workerResult.StatusCodes.Where(s => s.Key >= 400))
+            foreach (var statusCode in workerResult.StatusCodes)
             {
                 errors.Add(statusCode.Key.ToString(), statusCode.Value);
             }
