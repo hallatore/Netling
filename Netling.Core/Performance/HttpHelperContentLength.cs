@@ -9,7 +9,7 @@ namespace Netling.Core.Performance
             int index;
             int length;
             HttpHelper.SeekHeader(buffer, HttpHeaders.ContentLength, start, end, out index, out length);
-            return buffer.ConvertToInt(index, length);
+            return buffer.ConvertToInt(index, length, end);
         }
 
         public static int GetResponseLength(byte[] buffer, int start, int end)

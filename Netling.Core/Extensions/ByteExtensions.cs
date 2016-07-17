@@ -2,11 +2,11 @@
 {
     internal static class ByteExtensions
     {
-        public static int ConvertToInt(this byte[] bytes, int start, int length)
+        public static int ConvertToInt(this byte[] bytes, int start, int length, int end)
         {
             var result = 0;
 
-            if (bytes.Length < start + length)
+            if (end < start + length)
                 return result;
 
             for (var i = 0; i < length; i++)

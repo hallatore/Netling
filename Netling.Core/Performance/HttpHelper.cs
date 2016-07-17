@@ -26,13 +26,13 @@ namespace Netling.Core.Performance
 
         public static int GetStatusCode(byte[] buffer, int start, int end)
         {
-            return buffer.ConvertToInt(start + 9, 3);
+            return buffer.ConvertToInt(start + 9, 3, end);
         }
 
         // HTTP/1.1 200 OK\r\nDate: Wed, 06 Jul 2016 18:26:27 GMT\r\nContent-Length: 13\r\nContent-Type: text/plain\r\nServer: Kestrel\r\n\r\nHello, World!
         public static bool SeekHeader(byte[] buffer, byte[] header, int start, int end, out int index, out int length)
         {
-            if (start + header.Length > buffer.Length)
+            if (end < start + header.Length)
             {
                 index = -1;
                 length = 0;
@@ -65,7 +65,7 @@ namespace Netling.Core.Performance
 
         private static int SeekReturn(byte[] buffer, int start, int end)
         {
-            while (start + 1 < buffer.Length && start + 1 < end)
+            while (start + 1 < end)
             {
                 if (buffer[start] == 13)
                     return start;
@@ -78,7 +78,7 @@ namespace Netling.Core.Performance
         
         public static int SeekHeaderEnd(byte[] buffer, int start, int end)
         {
-            while (start + 3 < buffer.Length && start + 3 < end)
+            while (start + 3 < end)
             {
                 if (buffer[start] == 13 &&
                     buffer[start + 1] == 10 &&
@@ -90,17 +90,6 @@ namespace Netling.Core.Performance
             }
 
             return -1;
-        }
-
-        public static bool IsHeaderStart(byte[] buffer, int start)
-        {
-            if (start + 3 > buffer.Length)
-                return false;
-
-            return buffer[start] == 72 &&
-                   buffer[start + 1] == 84 &&
-                   buffer[start + 2] == 84 &&
-                   buffer[start + 3] == 80;
         }
 
         public static Stream GetStream(TcpClient client, Uri uri)
