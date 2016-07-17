@@ -49,8 +49,8 @@
                 <ListView Margin="10" Name="ErrorsListView">
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn Header="Status code / Exception" Width="240" DisplayMemberBinding="{Binding Key}" />
-                            <GridViewColumn Header="Count" Width="50" DisplayMemberBinding="{Binding Value}" />
+                            <GridViewColumn Header="Name" Width="240" DisplayMemberBinding="{Binding Key}" />
+                            <GridViewColumn Header="Count" Width="100" DisplayMemberBinding="{Binding Value}" />
                         </GridView>
                     </ListView.View>
                 </ListView>

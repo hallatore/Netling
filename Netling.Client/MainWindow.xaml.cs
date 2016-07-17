@@ -44,7 +44,7 @@ namespace Netling.Client
             }
 
             Threads.SelectedIndex = 0;
-            Urls.Focus();
+            Url.Focus();
         }
 
         private async void StartButton_Click(object sender, RoutedEventArgs e)
@@ -82,17 +82,17 @@ namespace Netling.Client
 
                 }
 
-                if (string.IsNullOrWhiteSpace(Urls.Text))
+                if (string.IsNullOrWhiteSpace(Url.Text))
                     return;
 
                 Uri uri;
 
-                if (!Uri.TryCreate(Urls.Text.Trim(), UriKind.Absolute, out uri))
+                if (!Uri.TryCreate(Url.Text.Trim(), UriKind.Absolute, out uri))
                     return;
                 
                 Threads.IsEnabled = false;
                 Duration.IsEnabled = false;
-                Urls.IsEnabled = false;
+                Url.IsEnabled = false;
                 StartButton.Content = "Cancel";
                 _running = true;
 
@@ -147,7 +147,7 @@ namespace Netling.Client
             _running = false;
             Threads.IsEnabled = true;
             Duration.IsEnabled = true;
-            Urls.IsEnabled = true;
+            Url.IsEnabled = true;
             StartButton.IsEnabled = false;
             _cancellationTokenSource = null;
 

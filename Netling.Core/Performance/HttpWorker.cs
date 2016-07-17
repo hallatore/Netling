@@ -16,16 +16,14 @@ namespace Netling.Core.Performance
         private TcpClient _client;
         private Stream _stream;
         private readonly byte[] _buffer;
-        private readonly byte[] _tmpBuffer;
-        private int _streamIndex;
+        private int _bufferIndex;
         private int _read;
         private ResponseType _responseType;
 
         public HttpWorker(Uri uri)
         {
             _buffer = new byte[4096];
-            _tmpBuffer = new byte[_buffer.Length * 2];
-            _streamIndex = 0;
+            _bufferIndex = 0;
             _read = 0;
             _responseType = ResponseType.Unknown;
             _uri = uri;
@@ -88,31 +86,49 @@ namespace Netling.Core.Performance
             return length;
         }
 
-        // experimental ...
         public int ReadPipelined(out int statusCode)
         {
-            if (_streamIndex == 0)
+            if (_bufferIndex == 0)
             {
                 _read = _stream.Read(_buffer, 0, _buffer.Length);
-                _responseType = HttpHelper.GetResponseType(_buffer, 0, _read);
             }
 
-            statusCode = HttpHelper.GetStatusCode(_buffer, _streamIndex, _read);
+            _responseType = HttpHelper.GetResponseType(_buffer, _bufferIndex, _read);
+
+            while (_responseType == ResponseType.Unknown)
+            {
+                // Shift the buffer if we are running out of space
+                if (_bufferIndex > _buffer.Length / 2)
+                {
+                    Array.Copy(_buffer, _bufferIndex, _buffer, 0, _read - _bufferIndex);
+                    _read -= _bufferIndex;
+                    _bufferIndex = 0;
+                }
+
+                _read += _stream.Read(_buffer, _read, _buffer.Length - _read);
+                _responseType = HttpHelper.GetResponseType(_buffer, _bufferIndex, _read);
+            }
+
+            statusCode = HttpHelper.GetStatusCode(_buffer, _bufferIndex, _read);
 
             if (_responseType == ResponseType.ContentLength)
             {
-                var length = _read - _streamIndex;
-                var responseLength = HttpHelperContentLength.GetResponseLength(_buffer, _streamIndex, _read);
+                var length = _read - _bufferIndex;
+                var responseLength = HttpHelperContentLength.GetResponseLength(_buffer, _bufferIndex, _read);
 
-                // Happens if we cut the response at a bad place ...
                 while (responseLength < 0)
                 {
-                    Array.Copy(_buffer, 0, _tmpBuffer, 0, _buffer.Length);
-                    var tmpRead = _read;
-                    _read = _stream.Read(_buffer, 0, _buffer.Length);
-                    length += _read;
-                    Array.Copy(_buffer, 0, _tmpBuffer, tmpRead, _read);
-                    responseLength = HttpHelperContentLength.GetResponseLength(_tmpBuffer, _streamIndex, tmpRead + _read);
+                    // Shift the buffer if we are running out of space
+                    if (_bufferIndex > _buffer.Length / 2)
+                    {
+                        Array.Copy(_buffer, _bufferIndex, _buffer, 0, _read - _bufferIndex);
+                        _read -= _bufferIndex;
+                        _bufferIndex = 0;
+                    }
+
+                    _read += _stream.Read(_buffer, _read, _buffer.Length - _read);
+                    length = _read - _bufferIndex;
+                    responseLength = HttpHelperContentLength.GetResponseLength(_buffer, _bufferIndex, _read);
                 }
 
                 while (length < responseLength)
@@ -122,16 +138,16 @@ namespace Netling.Core.Performance
                 }
 
                 var end = _read - (length - responseLength);
-                _streamIndex = _read > end ? end : 0;
+                _bufferIndex = _read > end ? end : 0;
                 return responseLength;
             }
             else if (_responseType == ResponseType.Chunked)
             {
                 var length = 0;
-                var streamEnd = HttpHelperChunked.SeekEndOfChunkedStream(_buffer, _streamIndex, _read);
+                var streamEnd = HttpHelperChunked.SeekEndOfChunkedStream(_buffer, _bufferIndex, _read);
 
                 if (streamEnd >= 0)
-                    length = streamEnd - _streamIndex;
+                    length = streamEnd - _bufferIndex;
 
                 while (streamEnd < 0)
                 {
@@ -143,7 +159,7 @@ namespace Netling.Core.Performance
                         length += streamEnd;
                 }
 
-                _streamIndex = _read > streamEnd ? streamEnd : 0;
+                _bufferIndex = _read > streamEnd ? streamEnd : 0;
                 return length;
             }
             else
