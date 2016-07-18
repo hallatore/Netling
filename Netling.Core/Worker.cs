@@ -63,9 +63,23 @@ namespace Netling.Core
             try
             {
                 int tmpStatusCode;
-                worker.Write();
-                worker.Flush();
-                worker.Read(out tmpStatusCode);
+
+                if (pipelining > 1)
+                {
+                    worker.WritePipelined(pipelining);
+                    worker.Flush();
+                    for (var j = 0; j < pipelining; j++)
+                    {
+                        worker.ReadPipelined(out tmpStatusCode);
+                    }
+                }
+                else
+                {
+                    worker.Write();
+                    worker.Flush();
+                    worker.Read(out tmpStatusCode);
+                }
+                
             }
             catch (Exception) { }
 
@@ -74,21 +88,20 @@ namespace Netling.Core
                 try
                 {
                     sw2.Restart();
-                    for (var j = 0; j < pipelining; j++)
-                    {
-                        worker.Write();
-                    }
-
-                    worker.Flush();
 
                     if (pipelining == 1)
                     {
+                        worker.Write();
+                        worker.Flush();
                         int statusCode;
                         var length = worker.Read(out statusCode);
                         result.Add((int)Math.Floor(sw.Elapsed.TotalSeconds), length, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, statusCode);
                     }
                     else
                     {
+                        worker.WritePipelined(pipelining);
+                        worker.Flush();
+
                         for (var j = 0; j < pipelining; j++)
                         {
                             int statusCode;

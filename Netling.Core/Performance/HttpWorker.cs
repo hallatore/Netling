@@ -19,6 +19,7 @@ namespace Netling.Core.Performance
         private int _bufferIndex;
         private int _read;
         private ResponseType _responseType;
+        private byte[] _requestPipelining = null;
 
         public HttpWorker(Uri uri)
         {
@@ -41,6 +42,27 @@ namespace Netling.Core.Performance
             
             _endPoint = new IPEndPoint(ip, _uri.Port);
             _request = Encoding.UTF8.GetBytes($"GET {_uri.PathAndQuery} HTTP/1.1\r\nAccept-Encoding: gzip, deflate, sdch\r\nHost: {_uri.Host}\r\nContent-Length: 0\r\n\r\n");
+        }
+
+        private byte[] GetPipelineBuffer(int count)
+        {
+            var result = new byte[_request.Length * count];
+
+            for (var i = 0; i < count; i++)
+            {
+                Array.Copy(_request, 0, result, _request.Length * i, _request.Length);
+            }
+
+            return result;
+        }
+
+        public void WritePipelined(int pipelining)
+        {
+            if (_requestPipelining == null)
+                _requestPipelining = GetPipelineBuffer(pipelining);
+
+            InitClient();
+            _stream.Write(_requestPipelining, 0, _requestPipelining.Length);
         }
 
         public void Write()
