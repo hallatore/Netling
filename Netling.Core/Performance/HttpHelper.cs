@@ -96,7 +96,7 @@ namespace Netling.Core.Performance
         {
             if (uri.Scheme == "http")
                 return client.GetStream();
-
+            
             var stream = new SslStream(client.GetStream());
             var xc = new X509Certificate2Collection();
             stream.AuthenticateAsClient(uri.Host, xc, SslProtocols.Tls, false);

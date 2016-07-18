@@ -23,7 +23,7 @@ namespace Netling.Core.Performance
 
         public HttpWorker(Uri uri)
         {
-            _buffer = new byte[4096];
+            _buffer = new byte[8192];
             _bufferIndex = 0;
             _read = 0;
             _responseType = ResponseType.Unknown;
@@ -50,7 +50,7 @@ namespace Netling.Core.Performance
 
             for (var i = 0; i < count; i++)
             {
-                Array.Copy(_request, 0, result, _request.Length * i, _request.Length);
+                Buffer.BlockCopy(_request, 0, result, _request.Length * i, _request.Length);
             }
 
             return result;
@@ -122,7 +122,7 @@ namespace Netling.Core.Performance
                 // Shift the buffer if we are running out of space
                 if (_bufferIndex > _buffer.Length / 2)
                 {
-                    Array.Copy(_buffer, _bufferIndex, _buffer, 0, _read - _bufferIndex);
+                    Buffer.BlockCopy(_buffer, _bufferIndex, _buffer, 0, _read - _bufferIndex);
                     _read -= _bufferIndex;
                     _bufferIndex = 0;
                 }
@@ -143,7 +143,7 @@ namespace Netling.Core.Performance
                     // Shift the buffer if we are running out of space
                     if (_bufferIndex > _buffer.Length / 2)
                     {
-                        Array.Copy(_buffer, _bufferIndex, _buffer, 0, _read - _bufferIndex);
+                        Buffer.BlockCopy(_buffer, _bufferIndex, _buffer, 0, _read - _bufferIndex);
                         _read -= _bufferIndex;
                         _bufferIndex = 0;
                     }
@@ -207,6 +207,7 @@ namespace Netling.Core.Performance
             }
             catch (SocketException) { }
 
+            _client.NoDelay = true;
             _client.SendTimeout = 10000;
             _client.ReceiveTimeout = 10000;
             _client.Connect(_endPoint);
