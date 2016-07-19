@@ -1,22 +1,21 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Netling.Core.Models
 {
     internal class WorkerThreadResult
     {
         public Dictionary<int, Second> Seconds { get; private set; }
-        public TimeSpan Elapsed { get; private set; }
 
         public WorkerThreadResult()
         {
             Seconds = new Dictionary<int, Second>();
         }
 
-        public void Add(int elapsed, long bytes, double responsetime, int statusCode)
+        public void Add(int elapsed, long bytes, double responsetime, int statusCode, bool trackResponseTime)
         {
-            GetItem(elapsed).Add(bytes, responsetime, statusCode);
+            GetItem(elapsed).Add(bytes, responsetime, statusCode, trackResponseTime);
         }
 
         public void AddError(int elapsed, double responsetime, Exception exception)
@@ -32,25 +31,6 @@ namespace Netling.Core.Models
             var second = new Second(elapsed);
             Seconds.Add(elapsed, second);
             return second;
-        }
-
-        private void AddMerged(Second second)
-        {
-            GetItem(second.Elapsed).AddMerged(second);
-        }
-
-        public static WorkerThreadResult MergeResults(IReadOnlyList<WorkerThreadResult> results, TimeSpan elapsed)
-        {
-            var result = new WorkerThreadResult();
-            result.Elapsed = elapsed;
-            var tmp = results.SelectMany(c => c.Seconds).ToList();
-
-            foreach (var item in tmp)
-            {
-                result.AddMerged(item.Value);
-            }
-
-            return result;
         }
     }
 }

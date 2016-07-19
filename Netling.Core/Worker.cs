@@ -17,14 +17,14 @@ namespace Netling.Core
         {
             return Task.Run(() =>
             {
-                var internalWorkerResult = QueueWorkerThreads(uri, threads, threadAfinity, pipelining, duration, cancellationToken);
-                var workerResult = new WorkerResult(uri, threads, threadAfinity, pipelining, internalWorkerResult.Elapsed);
-                workerResult.Process(internalWorkerResult);
+                var combinedWorkerThreadResult = QueueWorkerThreads(uri, threads, threadAfinity, pipelining, duration, cancellationToken);
+                var workerResult = new WorkerResult(uri, threads, threadAfinity, pipelining, combinedWorkerThreadResult.Elapsed);
+                workerResult.Process(combinedWorkerThreadResult);
                 return workerResult;
             });
         }
 
-        private static WorkerThreadResult QueueWorkerThreads(Uri uri, int threads, bool threadAfinity, int pipelining, TimeSpan duration, CancellationToken cancellationToken)
+        private static CombinedWorkerThreadResult QueueWorkerThreads(Uri uri, int threads, bool threadAfinity, int pipelining, TimeSpan duration, CancellationToken cancellationToken)
         {
             var results = new ConcurrentQueue<WorkerThreadResult>();
             var events = new List<ManualResetEventSlim>();
@@ -37,7 +37,7 @@ namespace Netling.Core
 
                 ThreadHelper.QueueThread(i, threadAfinity, () =>
                 {
-                    DoWork(uri, duration, pipelining, results, sw, cancellationToken, resetEvent);
+                    DoWork(uri, duration, pipelining, results, sw, cancellationToken, resetEvent, i);
                 });
 
                 events.Add(resetEvent);
@@ -50,15 +50,18 @@ namespace Netling.Core
             }
             sw.Stop();
 
-            return WorkerThreadResult.MergeResults(results.ToList(), sw.Elapsed);
+            return new CombinedWorkerThreadResult(results, sw.Elapsed);
         }
 
-        private static void DoWork(Uri uri, TimeSpan duration, int pipelining, ConcurrentQueue<WorkerThreadResult> results, Stopwatch sw, CancellationToken cancellationToken, ManualResetEventSlim resetEvent)
+        private static void DoWork(Uri uri, TimeSpan duration, int pipelining, ConcurrentQueue<WorkerThreadResult> results, Stopwatch sw, CancellationToken cancellationToken, ManualResetEventSlim resetEvent, int workerIndex)
         {
             var result = new WorkerThreadResult();
             var sw2 = new Stopwatch();
             var sw3 = new Stopwatch();
             var worker = new HttpWorker(uri);
+
+            // To save memory we only track response times from the first 20 workers
+            var trackResponseTime = workerIndex < 20;
 
             // Priming connection ...
             try
@@ -95,7 +98,7 @@ namespace Netling.Core
                         worker.Flush();
                         int statusCode;
                         var length = worker.Read(out statusCode);
-                        result.Add((int) Math.Floor(sw.Elapsed.TotalSeconds), length, (double) sw2.ElapsedTicks / Stopwatch.Frequency * 1000, statusCode);
+                        result.Add((int) Math.Floor(sw.Elapsed.TotalSeconds), length, (double) sw2.ElapsedTicks / Stopwatch.Frequency * 1000, statusCode, trackResponseTime);
                     }
                     catch (Exception ex)
                     {
@@ -124,7 +127,7 @@ namespace Netling.Core
                         {
                             int statusCode;
                             var length = worker.ReadPipelined(out statusCode);
-                            result.Add((int)Math.Floor(sw.Elapsed.TotalSeconds), length, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, statusCode);
+                            result.Add((int)Math.Floor(sw.Elapsed.TotalSeconds), length, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, statusCode, trackResponseTime);
 
                             if (j == 0 && !cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.Elapsed.TotalMilliseconds)
                             {

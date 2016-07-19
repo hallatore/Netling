@@ -20,11 +20,18 @@ namespace Netling.Core.Models
             Exceptions = new Dictionary<Type, int>();
         }
 
-        public void Add(long bytes, double responseTime, int statusCode)
+        internal void ClearResponseTimes()
+        {
+            ResponseTimes = new List<double>();
+        }
+
+        public void Add(long bytes, double responseTime, int statusCode, bool trackResponseTime)
         {
             Count++;
             Bytes += bytes;
-            ResponseTimes.Add(responseTime);
+
+            if (trackResponseTime)
+                ResponseTimes.Add(responseTime);
 
             if (StatusCodes.ContainsKey(statusCode))
                 StatusCodes[statusCode]++;
@@ -48,7 +55,6 @@ namespace Netling.Core.Models
         {
             Count += second.Count;
             Bytes += second.Bytes;
-            ResponseTimes.AddRange(second.ResponseTimes);
 
             foreach (var statusCode in second.StatusCodes)
             {

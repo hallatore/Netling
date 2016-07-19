@@ -15,7 +15,6 @@ namespace Netling.Core.Models
             Pipelining = pipelining;
             Elapsed = elapsed;
             Seconds = new Dictionary<int, Second>();
-            ResponseTimes = new double[0];
             Histogram = new int[0];
             StatusCodes = new Dictionary<int, int>();
             Exceptions = new Dictionary<Type, int>();
@@ -31,8 +30,7 @@ namespace Netling.Core.Models
         public long Errors { get; private set; }
         public double RequestsPerSecond { get; private set; }
         public double BytesPrSecond { get; private set; }
-
-        public double[] ResponseTimes { get; private set; }
+        
         public Dictionary<int, int> StatusCodes { get; private set; }
         public Dictionary<Type, int> Exceptions { get; private set; }
         public Dictionary<int, Second> Seconds { get; set; }
@@ -48,14 +46,13 @@ namespace Netling.Core.Models
             get { return Math.Round(BytesPrSecond * 8 / 1024 / 1024, MidpointRounding.AwayFromZero); }
         }
 
-        internal void Process(WorkerThreadResult wtResult)
+        internal void Process(CombinedWorkerThreadResult wtResult)
         {
             Seconds = wtResult.Seconds;
             var items = wtResult.Seconds.Select(r => r.Value).DefaultIfEmpty(new Second(0)).ToList();
             Count = items.Sum(s => s.Count);
             RequestsPerSecond = Count / (Elapsed.TotalMilliseconds / 1000);
             BytesPrSecond = items.Sum(s => s.Bytes) / (Elapsed.TotalMilliseconds / 1000);
-            ResponseTimes = items.SelectMany(s => s.ResponseTimes).OrderBy(r => r).ToArray();
 
             foreach (var statusCode in items.SelectMany(s => s.StatusCodes))
             {
@@ -75,14 +72,32 @@ namespace Netling.Core.Models
 
             Errors = StatusCodes.Where(s => s.Key >= 400).Sum(s => s.Value) + Exceptions.Sum(e => e.Value);
 
-            if (!ResponseTimes.Any())
+            var responseTimes = GetResponseTimes(wtResult.ResponseTimes);
+            if (!responseTimes.Any())
                 return;
 
-            Median = ResponseTimes.GetMedian();
-            StdDev = ResponseTimes.GetStdDev();
-            Min = ResponseTimes.First();
-            Max = ResponseTimes.Last();
-            Histogram = GenerateHistogram(ResponseTimes);
+            Median = responseTimes.GetMedian();
+            StdDev = responseTimes.GetStdDev();
+            Min = responseTimes.First();
+            Max = responseTimes.Last();
+            Histogram = GenerateHistogram(responseTimes);
+        }
+
+        private static double[] GetResponseTimes(List<List<double>> items)
+        {
+            var result = new double[items.Sum(s => s.Count)];
+            var offset = 0;
+
+            for (var i = 0; i < items.Count; i++)
+            {
+                items[i].CopyTo(result, offset);
+                offset += items[i].Count;
+                items[i] = null;
+            }
+
+            GC.Collect();
+            Array.Sort(result);
+            return result;
         }
 
         private int[] GenerateHistogram(double[] responeTimes)
