@@ -43,7 +43,7 @@ namespace Netling.Core.Performance
             {
                 if (start + i < end)
                 {
-                    if (header[i] == buffer[start + i])
+                    if ((header[i] | 0x20) == (buffer[start + i] | 0x20))
                         continue;
 
                     var next = SeekReturn(buffer, start + i, end);
