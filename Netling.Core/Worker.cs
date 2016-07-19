@@ -57,6 +57,7 @@ namespace Netling.Core
         {
             var result = new WorkerThreadResult();
             var sw2 = new Stopwatch();
+            var sw3 = new Stopwatch();
             var worker = new HttpWorker(uri);
 
             // Priming connection ...
@@ -83,36 +84,64 @@ namespace Netling.Core
             }
             catch (Exception) { }
 
-            while (!cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.Elapsed.TotalMilliseconds)
+            if (pipelining == 1)
             {
-                try
+                while (!cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.Elapsed.TotalMilliseconds)
                 {
-                    sw2.Restart();
-
-                    if (pipelining == 1)
+                    try
                     {
+                        sw2.Restart();
                         worker.Write();
                         worker.Flush();
                         int statusCode;
                         var length = worker.Read(out statusCode);
-                        result.Add((int)Math.Floor(sw.Elapsed.TotalSeconds), length, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, statusCode);
+                        result.Add((int) Math.Floor(sw.Elapsed.TotalSeconds), length, (double) sw2.ElapsedTicks / Stopwatch.Frequency * 1000, statusCode);
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        worker.WritePipelined(pipelining);
-                        worker.Flush();
+                        result.AddError((int) Math.Floor(sw.Elapsed.TotalSeconds), (double) sw2.ElapsedTicks / Stopwatch.Frequency * 1000, ex);
+                    }
+                }
+            }
+            else
+            {
+                try
+                {
+                    sw2.Restart();
+                    worker.WritePipelined(pipelining);
+                    worker.Flush();
+                }
+                catch (Exception ex)
+                {
+                    result.AddError((int)Math.Floor(sw.Elapsed.TotalSeconds), (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, ex);
+                }
 
+                while (!cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.Elapsed.TotalMilliseconds)
+                {
+                    try
+                    {
                         for (var j = 0; j < pipelining; j++)
                         {
                             int statusCode;
                             var length = worker.ReadPipelined(out statusCode);
                             result.Add((int)Math.Floor(sw.Elapsed.TotalSeconds), length, (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, statusCode);
+
+                            if (j == 0 && !cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.Elapsed.TotalMilliseconds)
+                            {
+                                sw3.Restart();
+                                worker.WritePipelined(pipelining);
+                                worker.Flush();
+                            }
                         }
+
+                        var tmpSw = sw2;
+                        sw2 = sw3;
+                        sw3 = sw2;
                     }
-                }
-                catch (Exception ex)
-                {
-                    result.AddError((int)Math.Floor(sw.Elapsed.TotalSeconds), (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, ex);
+                    catch (Exception ex)
+                    {
+                        result.AddError((int)Math.Floor(sw.Elapsed.TotalSeconds), (double)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, ex);
+                    }
                 }
             }
 

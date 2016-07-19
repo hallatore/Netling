@@ -59,7 +59,9 @@ namespace Netling.Core.Performance
         public void WritePipelined(int pipelining)
         {
             if (_requestPipelining == null)
+            {
                 _requestPipelining = GetPipelineBuffer(pipelining);
+            }
 
             InitClient();
             _stream.Write(_requestPipelining, 0, _requestPipelining.Length);
@@ -206,7 +208,7 @@ namespace Netling.Core.Performance
                 _client.Client.IOControl(sioLoopbackFastPath, optionInValue, null);
             }
             catch (SocketException) { }
-
+            
             _client.NoDelay = true;
             _client.SendTimeout = 10000;
             _client.ReceiveTimeout = 10000;

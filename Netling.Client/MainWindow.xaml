@@ -37,6 +37,10 @@
                     <ComboBoxItem>80</ComboBoxItem>
                     <ComboBoxItem>90</ComboBoxItem>
                     <ComboBoxItem>100</ComboBoxItem>
+                    <ComboBoxItem>200</ComboBoxItem>
+                    <ComboBoxItem>300</ComboBoxItem>
+                    <ComboBoxItem>400</ComboBoxItem>
+                    <ComboBoxItem>500</ComboBoxItem>
                 </ComboBox>
             </StackPanel>
             <StackPanel Margin="0,0,20,0">

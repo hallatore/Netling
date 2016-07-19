@@ -38,7 +38,7 @@ namespace Netling.Client
                 Threads.Items.Add(new KeyValuePair<int, string>(i, i.ToString()));
             }
 
-            for (var i = 2; i <= 10; i++)
+            for (var i = 2; i <= 20; i++)
             {
                 Threads.Items.Add(new KeyValuePair<int, string>(Environment.ProcessorCount * i, $"{Environment.ProcessorCount * i} - ({i} per core)"));
             }
