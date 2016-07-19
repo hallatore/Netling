@@ -8,7 +8,7 @@ namespace Netling.Core.Utils
 {
     internal static class ThreadHelper
     {
-        public static void QueueThread(int i, bool useThreadAfinity, Action action)
+        public static void QueueThread(int i, bool useThreadAfinity, Action<int> action)
         {
             var thread = new Thread(() => {
                 if (useThreadAfinity)
@@ -18,7 +18,7 @@ namespace Netling.Core.Utils
                     GetCurrentThread().ProcessorAffinity = new IntPtr(1 << afinity);
                 }
 
-                action.Invoke();
+                action.Invoke(i);
 
                 if (useThreadAfinity)
                     Thread.EndThreadAffinity();

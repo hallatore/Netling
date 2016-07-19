@@ -35,9 +35,9 @@ namespace Netling.Core
             {
                 var resetEvent = new ManualResetEventSlim(false);
 
-                ThreadHelper.QueueThread(i, threadAfinity, () =>
+                ThreadHelper.QueueThread(i, threadAfinity, (threadIndex) =>
                 {
-                    DoWork(uri, duration, pipelining, results, sw, cancellationToken, resetEvent, i);
+                    DoWork(uri, duration, pipelining, results, sw, cancellationToken, resetEvent, threadIndex);
                 });
 
                 events.Add(resetEvent);
