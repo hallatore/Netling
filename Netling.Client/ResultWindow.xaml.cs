@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -22,9 +23,10 @@ namespace Netling.Client
 
         public async Task Load(WorkerResult workerResult)
         {
-
             var taskResult = await GenerateAsync(workerResult);
             _resultWindowItem = taskResult.ResultWindowItem;
+            var nfi = (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
+            nfi.NumberGroupSeparator = " ";
 
             RequestsPerSecondGraph.Draw(taskResult.Throughput);
             HistogramGraph.Draw(workerResult.Histogram.Select((count, i) => new DataPoint(i, count)).ToList());
@@ -34,14 +36,14 @@ namespace Netling.Client
             PipeliningValueUserControl.Value = _resultWindowItem.Pipelining.ToString();
             ThreadAfinityValueUserControl.Value = _resultWindowItem.ThreadAfinity ? "ON" : "OFF";
 
-            RequestsValueUserControl.Value = $"{_resultWindowItem.JobsPerSecond:#,0}";
-            ElapsedValueUserControl.Value = $"{_resultWindowItem.ElapsedSeconds:#,0}";
-            BandwidthValueUserControl.Value = $"{_resultWindowItem.Bandwidth:0}";
-            ErrorsValueUserControl.Value = _resultWindowItem.Errors.ToString();
-            MedianValueUserControl.Value = string.Format(_resultWindowItem.Median > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.Median);
-            StdDevValueUserControl.Value = string.Format(_resultWindowItem.StdDev > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.StdDev);
-            MinValueUserControl.Value = string.Format(_resultWindowItem.Min > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.Min);
-            MaxValueUserControl.Value = string.Format(_resultWindowItem.Max > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.Max);
+            RequestsValueUserControl.Value = _resultWindowItem.JobsPerSecond.ToString("#,0", nfi);
+            ElapsedValueUserControl.Value = $"{_resultWindowItem.ElapsedSeconds:0}";
+            BandwidthValueUserControl.Value = _resultWindowItem.Bandwidth.ToString("#,0", nfi);
+            ErrorsValueUserControl.Value = _resultWindowItem.Errors.ToString("#,0", nfi);
+            MedianValueUserControl.Value = string.Format(nfi, _resultWindowItem.Median > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.Median);
+            StdDevValueUserControl.Value = string.Format(nfi, _resultWindowItem.StdDev > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.StdDev);
+            MinValueUserControl.Value = string.Format(nfi, _resultWindowItem.Min > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.Min);
+            MaxValueUserControl.Value = string.Format(nfi, _resultWindowItem.Max > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.Max);
 
             var errors = new Dictionary<string, int>();
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -107,10 +106,10 @@ Running {0}s test @ {1}
     Thread afinity: {4}";
 
         private const string ResultString = @"
-{0:#,0} requests in {1:#,0.##}s
-    Requests/sec:   {2:#,0}
-    Bandwidth:      {3:#,0} mbit
-    Errors:         {4:#,0}
+{0} requests in {1:0.##}s
+    Requests/sec:   {2:0}
+    Bandwidth:      {3:0} mbit
+    Errors:         {4:0}
 Latency
     Median:         {5:0.000} ms
     StdDev:         {6:0.000} ms
