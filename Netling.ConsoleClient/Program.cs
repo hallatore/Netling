@@ -13,8 +13,8 @@ namespace Netling.ConsoleClient
     {
         static void Main(string[] args)
         {
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en");
             Thread.CurrentThread.CurrentUICulture = new CultureInfo("en");
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en");
 
             var threads = 1;
             var pipelining = 1;

@@ -25,36 +25,37 @@ namespace Netling.Client
         {
             var taskResult = await GenerateAsync(workerResult);
             _resultWindowItem = taskResult.ResultWindowItem;
-            var nfi = (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
-            nfi.NumberGroupSeparator = " ";
 
-            RequestsPerSecondGraph.Draw(taskResult.Throughput);
-            HistogramGraph.Draw(workerResult.Histogram.Select((count, i) => new DataPoint(i, count)).ToList());
+            RequestsPerSecondGraph.Draw(taskResult.Throughput, "{Y:#,0} rps");
+            var dataPoints = workerResult.Histogram.Select((count, i) => new DataPoint(i / 80.0 * (_resultWindowItem.Max - _resultWindowItem.Min) + _resultWindowItem.Min, count)).ToList();
+            HistogramGraph.Draw(dataPoints, "{X:0.000} ms");
 
             Title = "Netling - " + _resultWindowItem.Url;
             ThreadsValueUserControl.Value = _resultWindowItem.Threads.ToString();
             PipeliningValueUserControl.Value = _resultWindowItem.Pipelining.ToString();
             ThreadAfinityValueUserControl.Value = _resultWindowItem.ThreadAfinity ? "ON" : "OFF";
 
-            RequestsValueUserControl.Value = _resultWindowItem.JobsPerSecond.ToString("#,0", nfi);
+            RequestsValueUserControl.Value = _resultWindowItem.JobsPerSecond.ToString("#,0");
             ElapsedValueUserControl.Value = $"{_resultWindowItem.ElapsedSeconds:0}";
-            BandwidthValueUserControl.Value = _resultWindowItem.Bandwidth.ToString("#,0", nfi);
-            ErrorsValueUserControl.Value = _resultWindowItem.Errors.ToString("#,0", nfi);
-            MedianValueUserControl.Value = string.Format(nfi, _resultWindowItem.Median > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.Median);
-            StdDevValueUserControl.Value = string.Format(nfi, _resultWindowItem.StdDev > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.StdDev);
-            MinValueUserControl.Value = string.Format(nfi, _resultWindowItem.Min > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.Min);
-            MaxValueUserControl.Value = string.Format(nfi, _resultWindowItem.Max > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.Max);
+            BandwidthValueUserControl.Value = _resultWindowItem.Bandwidth.ToString("#,0");
+            ErrorsValueUserControl.Value = _resultWindowItem.Errors.ToString("#,0");
+            MedianValueUserControl.Value = string.Format(_resultWindowItem.Median > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.Median);
+            StdDevValueUserControl.Value = string.Format(_resultWindowItem.StdDev > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.StdDev);
+            MinValueUserControl.Value = string.Format(_resultWindowItem.Min > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.Min);
+            MaxValueUserControl.Value = string.Format(_resultWindowItem.Max > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.Max);
+            MinTextBlock.Text = MinValueUserControl.Value + " ms";
+            MaxTextBlock.Text = MaxValueUserControl.Value + " ms";
 
             var errors = new Dictionary<string, string>();
 
             foreach (var statusCode in workerResult.StatusCodes)
             {
-                errors.Add(statusCode.Key.ToString(), statusCode.Value.ToString("#,0", nfi));
+                errors.Add(statusCode.Key.ToString(), statusCode.Value.ToString("#,0"));
             }
 
             foreach (var exception in workerResult.Exceptions)
             {
-                errors.Add(exception.Key.ToString(), exception.Value.ToString("#,0", nfi));
+                errors.Add(exception.Key.ToString(), exception.Value.ToString("#,0"));
             }
 
             ErrorsListView.ItemsSource = errors;

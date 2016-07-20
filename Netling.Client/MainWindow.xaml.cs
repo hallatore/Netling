@@ -23,8 +23,9 @@ namespace Netling.Client
         public MainWindow()
         {
             InitializeComponent();
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en");
             Thread.CurrentThread.CurrentUICulture = new CultureInfo("en");
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en");
+            Thread.CurrentThread.CurrentCulture.NumberFormat.NumberGroupSeparator = " ";
             Loaded += OnLoaded;
         }
 

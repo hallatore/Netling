@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows.Controls;
+﻿using System.Collections.Generic;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
@@ -14,7 +12,7 @@ namespace Netling.Client
             InitializeComponent();
         }
 
-        public void Draw(IEnumerable<DataPoint> points)
+        public void Draw(IEnumerable<DataPoint> points, string trackerFormatString = null)
         {
             var plotModel = new PlotModel
             {
@@ -45,7 +43,14 @@ namespace Netling.Client
                 AxisTickToLabelDistance = 0
             });
             
-            var ls = new LineSeries {Color = OxyColor.Parse("#ff0079c5")};
+            var ls = new LineSeries
+            {
+                Color = OxyColor.Parse("#ff0079c5"),
+                CanTrackerInterpolatePoints = false
+            };
+
+            if (trackerFormatString != null)
+                ls.TrackerFormatString = trackerFormatString;
 
             foreach (var point in points)
             {

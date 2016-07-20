@@ -40,10 +40,14 @@
 
         <TabControl Grid.Row="3" Grid.ColumnSpan="4" Margin="0,20,0,0" Padding="0">
             <TabItem Header="LATENCY HISTOGRAM" FontSize="11">
-                <client:LineGraphControl x:Name="HistogramGraph"/>
+                <Grid>
+                    <client:LineGraphControl x:Name="HistogramGraph" Margin="-9,0,0,16"/>
+                    <TextBlock x:Name="MinTextBlock" Text="10 ms" FontSize="11" Margin="5,0,0,5" VerticalAlignment="Bottom" HorizontalAlignment="Left"/>
+                    <TextBlock x:Name="MaxTextBlock" Text="100 ms" FontSize="11" Margin="0,0,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
+                </Grid>
             </TabItem>
             <TabItem Header="REQUEST THROUGHPUT" FontSize="11">
-                <client:LineGraphControl x:Name="RequestsPerSecondGraph"/>
+                <client:LineGraphControl Margin="-9,0,0,0" x:Name="RequestsPerSecondGraph"/>
             </TabItem>
             <TabItem Header="STATUS CODES &amp; EXCEPTIONS" FontSize="11">
                 <ListView BorderThickness="0" Name="ErrorsListView">
