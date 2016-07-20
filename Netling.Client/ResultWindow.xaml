@@ -46,7 +46,7 @@
                 <client:LineGraphControl x:Name="RequestsPerSecondGraph"/>
             </TabItem>
             <TabItem Header="STATUS CODES &amp; EXCEPTIONS" FontSize="11">
-                <ListView Margin="10" Name="ErrorsListView">
+                <ListView BorderThickness="0" Name="ErrorsListView">
                     <ListView.View>
                         <GridView>
                             <GridViewColumn Header="Name" Width="240" DisplayMemberBinding="{Binding Key}" />

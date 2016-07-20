@@ -40,7 +40,9 @@ namespace Netling.Client
                 MajorGridlineStyle = LineStyle.Solid,
                 MinorGridlineStyle = LineStyle.Dot,
                 IsZoomEnabled = false,
-                IsPanEnabled = false
+                IsPanEnabled = false,
+                LabelFormatter = d => "",
+                AxisTickToLabelDistance = 0
             });
             
             var ls = new LineSeries {Color = OxyColor.Parse("#ff0079c5")};
