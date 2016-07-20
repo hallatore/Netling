@@ -19,12 +19,14 @@ namespace Netling.ConsoleClient
             var threads = 1;
             var pipelining = 1;
             var duration = 10;
+            int? count = null;
 
             var p = new OptionSet()
             {
                 {"t|threads=", (int v) => threads = v},
                 {"p|pipelining=", (int v) => pipelining = v},
                 {"d|duration=", (int v) => duration = v},
+                {"c|count=", (int? v) => count = v},
             };
 
             var extraArgs = p.Parse(args);
@@ -34,8 +36,10 @@ namespace Netling.ConsoleClient
 
             if (url != null && !Uri.TryCreate(url, UriKind.Absolute, out uri))
                 Console.WriteLine("Failed to parse URL");
+            else if (url != null && count.HasValue)
+                RunWithCount(uri, count.Value).Wait();
             else if (url != null)
-                Run(uri, threads, threadAfinity, pipelining, TimeSpan.FromSeconds(duration)).Wait();
+                RunWithDuration(uri, threads, threadAfinity, pipelining, TimeSpan.FromSeconds(duration)).Wait();
             else
                 ShowHelp();
         }
@@ -45,10 +49,26 @@ namespace Netling.ConsoleClient
             Console.WriteLine(HelpString);
         }
 
-        private static async Task Run(Uri uri, int threads, bool threadAfinity, int pipelining, TimeSpan duration)
+        private static Task RunWithCount(Uri uri, int count)
         {
-            Console.WriteLine(StartRunString, duration.TotalSeconds, uri, threads, pipelining, threadAfinity ? "ON" : "OFF");
-            var result = await Worker.Run(uri, threads, threadAfinity, pipelining, duration, new CancellationToken());
+            Console.WriteLine(StartRunWithCountString, count, uri);
+            return Run(uri, 1, false, 1, TimeSpan.MaxValue, count);
+        }
+
+        private static Task RunWithDuration(Uri uri, int threads, bool threadAfinity, int pipelining, TimeSpan duration)
+        {
+            Console.WriteLine(StartRunWithDurationString, duration.TotalSeconds, uri, threads, pipelining, threadAfinity ? "ON" : "OFF");
+            return Run(uri, threads, threadAfinity, pipelining, duration, null);
+        }
+
+        private static async Task Run(Uri uri, int threads, bool threadAfinity, int pipelining, TimeSpan duration, int? count)
+        {
+            WorkerResult result;
+
+            if (count.HasValue)
+                result = await Worker.Run(uri, count.Value, new CancellationToken());
+                    else
+            result = await Worker.Run(uri, threads, threadAfinity, pipelining, duration, new CancellationToken());
 
             Console.WriteLine(ResultString, 
                 result.Count,
@@ -65,6 +85,9 @@ namespace Netling.ConsoleClient
 
         private static string GetAsciiHistogram(WorkerResult workerResult)
         {
+            if (workerResult.Histogram.Length == 0)
+                return string.Empty;
+
             const string filled = "█";
             const string empty = " ";
             var histogramText = new string[7];
@@ -91,15 +114,20 @@ Usage: netling [-t threads] [-d duration] [-p pipelining] [-a] url
 Options:
     -t count        Number of threads to spawn.
     -d count        Duration of the run in seconds.
+    -c count        Amount of requests to send.
     -p count        Number of requests to pipeline.
     -a              Use thread afinity on the worker threads.
 
 Examples: 
-    netling -t 8 -d 60 http://localhost
+    netling http://localhost -t 8 -d 60
+    netling http://localhost -c 3000 
     netling http://localhost
 ";
 
-        private const string StartRunString = @"
+        private const string StartRunWithCountString = @"
+Running {0} test @ {1}";
+
+        private const string StartRunWithDurationString = @"
 Running {0}s test @ {1}
     Threads:        {2}
     Pipelining:     {3}

@@ -17,6 +17,11 @@
                     <ComboBoxItem>10 minutes</ComboBoxItem>
                     <ComboBoxItem>1 hour</ComboBoxItem>
                     <ComboBoxItem>Until canceled</ComboBoxItem>
+                    <ComboBoxItem>1 run on 1 thread</ComboBoxItem>
+                    <ComboBoxItem>100 runs on 1 thread</ComboBoxItem>
+                    <ComboBoxItem>1000 runs on 1 thread</ComboBoxItem>
+                    <ComboBoxItem>3000 runs on 1 thread</ComboBoxItem>
+                    <ComboBoxItem>10000 runs on 1 thread</ComboBoxItem>
                 </ComboBox>
             </StackPanel>
             <StackPanel Margin="0,0,20,0">

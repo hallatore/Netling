@@ -53,6 +53,7 @@ namespace Netling.Client
             if (!_running)
             {
                 var duration = default(TimeSpan);
+                int? count = null;
                 var threads = Convert.ToInt32(((KeyValuePair<int, string>)Threads.SelectionBoxItem).Key);
                 var threadAfinity = ThreadAfinity.IsChecked.HasValue && ThreadAfinity.IsChecked.Value;
                 var pipelining = Convert.ToInt32(Pipelining.SelectionBoxItem);
@@ -80,6 +81,26 @@ namespace Netling.Client
                         duration = TimeSpan.MaxValue;
                         StatusProgressbar.IsIndeterminate = true;
                         break;
+                    case "1 run on 1 thread":
+                        count = 1;
+                        StatusProgressbar.IsIndeterminate = true;
+                        break;
+                    case "100 runs on 1 thread":
+                        count = 100;
+                        StatusProgressbar.IsIndeterminate = true;
+                        break;
+                    case "1000 runs on 1 thread":
+                        count = 1000;
+                        StatusProgressbar.IsIndeterminate = true;
+                        break;
+                    case "3000 runs on 1 thread":
+                        count = 3000;
+                        StatusProgressbar.IsIndeterminate = true;
+                        break;
+                    case "10000 runs on 1 thread":
+                        count = 10000;
+                        StatusProgressbar.IsIndeterminate = true;
+                        break;
 
                 }
 
@@ -94,6 +115,8 @@ namespace Netling.Client
                 Threads.IsEnabled = false;
                 Duration.IsEnabled = false;
                 Url.IsEnabled = false;
+                Pipelining.IsEnabled = false;
+                ThreadAfinity.IsEnabled = false;
                 StartButton.Content = "Cancel";
                 _running = true;
 
@@ -103,7 +126,11 @@ namespace Netling.Client
                 StatusProgressbar.Value = 0;
                 StatusProgressbar.Visibility = Visibility.Visible;
 
-                _task = Worker.Run(uri, threads, threadAfinity, pipelining, duration, cancellationToken);
+                if (count.HasValue)
+                    _task = Worker.Run(uri, count.Value, cancellationToken);
+                else
+                    _task = Worker.Run(uri, threads, threadAfinity, pipelining, duration, cancellationToken);
+
                 _task.GetAwaiter().OnCompleted(async () =>
                 {
                     await JobCompleted();
@@ -149,6 +176,8 @@ namespace Netling.Client
             Threads.IsEnabled = true;
             Duration.IsEnabled = true;
             Url.IsEnabled = true;
+            Pipelining.IsEnabled = true;
+            ThreadAfinity.IsEnabled = true;
             StartButton.IsEnabled = false;
             _cancellationTokenSource = null;
 

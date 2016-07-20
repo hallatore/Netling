@@ -15,16 +15,26 @@ namespace Netling.Core
     {
         public static Task<WorkerResult> Run(Uri uri, int threads, bool threadAfinity, int pipelining, TimeSpan duration, CancellationToken cancellationToken)
         {
+            return Run(uri, threads, threadAfinity, pipelining, duration, null, cancellationToken);
+        }
+
+        public static Task<WorkerResult> Run(Uri uri, int count, CancellationToken cancellationToken)
+        {
+            return Run(uri, 1, false, 1, TimeSpan.MaxValue, count, cancellationToken);
+        }
+
+        private static Task<WorkerResult> Run(Uri uri, int threads, bool threadAfinity, int pipelining, TimeSpan duration, int? count, CancellationToken cancellationToken)
+        {
             return Task.Run(() =>
             {
-                var combinedWorkerThreadResult = QueueWorkerThreads(uri, threads, threadAfinity, pipelining, duration, cancellationToken);
+                var combinedWorkerThreadResult = QueueWorkerThreads(uri, threads, threadAfinity, pipelining, duration, count, cancellationToken);
                 var workerResult = new WorkerResult(uri, threads, threadAfinity, pipelining, combinedWorkerThreadResult.Elapsed);
                 workerResult.Process(combinedWorkerThreadResult);
                 return workerResult;
             });
         }
 
-        private static CombinedWorkerThreadResult QueueWorkerThreads(Uri uri, int threads, bool threadAfinity, int pipelining, TimeSpan duration, CancellationToken cancellationToken)
+        private static CombinedWorkerThreadResult QueueWorkerThreads(Uri uri, int threads, bool threadAfinity, int pipelining, TimeSpan duration, int? count, CancellationToken cancellationToken)
         {
             var results = new ConcurrentQueue<WorkerThreadResult>();
             var events = new List<ManualResetEventSlim>();
@@ -37,7 +47,7 @@ namespace Netling.Core
 
                 ThreadHelper.QueueThread(i, threadAfinity, (threadIndex) =>
                 {
-                    DoWork(uri, duration, pipelining, results, sw, cancellationToken, resetEvent, threadIndex);
+                    DoWork(uri, duration, count, pipelining, results, sw, cancellationToken, resetEvent, threadIndex);
                 });
 
                 events.Add(resetEvent);
@@ -53,45 +63,49 @@ namespace Netling.Core
             return new CombinedWorkerThreadResult(results, sw.Elapsed);
         }
 
-        private static void DoWork(Uri uri, TimeSpan duration, int pipelining, ConcurrentQueue<WorkerThreadResult> results, Stopwatch sw, CancellationToken cancellationToken, ManualResetEventSlim resetEvent, int workerIndex)
+        private static void DoWork(Uri uri, TimeSpan duration, int? count, int pipelining, ConcurrentQueue<WorkerThreadResult> results, Stopwatch sw, CancellationToken cancellationToken, ManualResetEventSlim resetEvent, int workerIndex)
         {
             var result = new WorkerThreadResult();
             var sw2 = new Stopwatch();
             var sw3 = new Stopwatch();
-            Stopwatch tmpSw = null;
             var worker = new HttpWorker(uri);
+            var current = 0;
 
             // To save memory we only track response times from the first 20 workers
             var trackResponseTime = workerIndex < 20;
 
             // Priming connection ...
-            try
+            if (!count.HasValue)
             {
-                int tmpStatusCode;
+                try
+                {
+                    int tmpStatusCode;
 
-                if (pipelining > 1)
-                {
-                    worker.WritePipelined(pipelining);
-                    worker.Flush();
-                    for (var j = 0; j < pipelining; j++)
+                    if (pipelining > 1)
                     {
-                        worker.ReadPipelined(out tmpStatusCode);
+                        worker.WritePipelined(pipelining);
+                        worker.Flush();
+                        for (var j = 0; j < pipelining; j++)
+                        {
+                            worker.ReadPipelined(out tmpStatusCode);
+                        }
                     }
+                    else
+                    {
+                        worker.Write();
+                        worker.Flush();
+                        worker.Read(out tmpStatusCode);
+                    }
+
                 }
-                else
-                {
-                    worker.Write();
-                    worker.Flush();
-                    worker.Read(out tmpStatusCode);
-                }
-                
+                catch (Exception) { }
             }
-            catch (Exception) { }
 
             if (pipelining == 1)
             {
-                while (!cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.Elapsed.TotalMilliseconds)
+                while (!cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.Elapsed.TotalMilliseconds && (!count.HasValue || current < count.Value))
                 {
+                    current++;
                     try
                     {
                         sw2.Restart();
@@ -138,9 +152,9 @@ namespace Netling.Core
                             }
                         }
 
-                        tmpSw = sw2;
+                        var tmp = sw2;
                         sw2 = sw3;
-                        sw3 = tmpSw;
+                        sw3 = tmp;
                     }
                     catch (Exception ex)
                     {
