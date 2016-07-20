@@ -58,6 +58,7 @@ namespace Netling.Core
             var result = new WorkerThreadResult();
             var sw2 = new Stopwatch();
             var sw3 = new Stopwatch();
+            Stopwatch tmpSw = null;
             var worker = new HttpWorker(uri);
 
             // To save memory we only track response times from the first 20 workers
@@ -98,11 +99,11 @@ namespace Netling.Core
                         worker.Flush();
                         int statusCode;
                         var length = worker.Read(out statusCode);
-                        result.Add((int) Math.Floor(sw.Elapsed.TotalSeconds), length, (float) sw2.ElapsedTicks / Stopwatch.Frequency * 1000, statusCode, trackResponseTime);
+                        result.Add((int)(sw.ElapsedTicks / Stopwatch.Frequency), length, (float) sw2.ElapsedTicks / Stopwatch.Frequency * 1000, statusCode, trackResponseTime);
                     }
                     catch (Exception ex)
                     {
-                        result.AddError((int) Math.Floor(sw.Elapsed.TotalSeconds), (float) sw2.ElapsedTicks / Stopwatch.Frequency * 1000, ex);
+                        result.AddError((int)(sw.ElapsedTicks / Stopwatch.Frequency), (float) sw2.ElapsedTicks / Stopwatch.Frequency * 1000, ex);
                     }
                 }
             }
@@ -116,7 +117,7 @@ namespace Netling.Core
                 }
                 catch (Exception ex)
                 {
-                    result.AddError((int)Math.Floor(sw.Elapsed.TotalSeconds), (float)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, ex);
+                    result.AddError((int)(sw.ElapsedTicks / Stopwatch.Frequency), (float)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, ex);
                 }
 
                 while (!cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.Elapsed.TotalMilliseconds)
@@ -127,7 +128,7 @@ namespace Netling.Core
                         {
                             int statusCode;
                             var length = worker.ReadPipelined(out statusCode);
-                            result.Add((int)Math.Floor(sw.Elapsed.TotalSeconds), length, (float)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, statusCode, trackResponseTime);
+                            result.Add((int)Math.Floor((float)sw.ElapsedTicks / Stopwatch.Frequency), length, (float)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, statusCode, trackResponseTime);
 
                             if (j == 0 && !cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.Elapsed.TotalMilliseconds)
                             {
@@ -137,13 +138,13 @@ namespace Netling.Core
                             }
                         }
 
-                        var tmpSw = sw2;
+                        tmpSw = sw2;
                         sw2 = sw3;
-                        sw3 = sw2;
+                        sw3 = tmpSw;
                     }
                     catch (Exception ex)
                     {
-                        result.AddError((int)Math.Floor(sw.Elapsed.TotalSeconds), (float)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, ex);
+                        result.AddError((int)(sw.ElapsedTicks / Stopwatch.Frequency), (float)sw2.ElapsedTicks / Stopwatch.Frequency * 1000, ex);
                     }
                 }
             }
