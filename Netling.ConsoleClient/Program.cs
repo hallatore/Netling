@@ -114,7 +114,7 @@ Usage: netling [-t threads] [-d duration] [-p pipelining] [-a] url
 Options:
     -t count        Number of threads to spawn.
     -d count        Duration of the run in seconds.
-    -c count        Amount of requests to send.
+    -c count        Amount of requests to send on a single thread.
     -p count        Number of requests to pipeline.
     -a              Use thread afinity on the worker threads.
 
