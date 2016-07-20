@@ -13,12 +13,12 @@ namespace Netling.Core.Models
             Seconds = new Dictionary<int, Second>();
         }
 
-        public void Add(int elapsed, long bytes, double responsetime, int statusCode, bool trackResponseTime)
+        public void Add(int elapsed, long bytes, float responsetime, int statusCode, bool trackResponseTime)
         {
             GetItem(elapsed).Add(bytes, responsetime, statusCode, trackResponseTime);
         }
 
-        public void AddError(int elapsed, double responsetime, Exception exception)
+        public void AddError(int elapsed, float responsetime, Exception exception)
         {
             GetItem(elapsed).AddError(responsetime, exception);
         }

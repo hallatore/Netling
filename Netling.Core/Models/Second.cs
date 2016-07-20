@@ -7,7 +7,7 @@ namespace Netling.Core.Models
     {
         public long Count { get; set; }
         public long Bytes { get; private set; }
-        public List<double> ResponseTimes { get; private set; }
+        public List<float> ResponseTimes { get; private set; }
         public Dictionary<int, int> StatusCodes { get; private set; }
         public Dictionary<Type, int> Exceptions { get; private set; }
         public int Elapsed { get; private set; }
@@ -15,17 +15,17 @@ namespace Netling.Core.Models
         public Second(int elapsed)
         {
             Elapsed = elapsed;
-            ResponseTimes = new List<double>();
+            ResponseTimes = new List<float>();
             StatusCodes = new Dictionary<int, int>();
             Exceptions = new Dictionary<Type, int>();
         }
 
         internal void ClearResponseTimes()
         {
-            ResponseTimes = new List<double>();
+            ResponseTimes = new List<float>();
         }
 
-        public void Add(long bytes, double responseTime, int statusCode, bool trackResponseTime)
+        public void Add(long bytes, float responseTime, int statusCode, bool trackResponseTime)
         {
             Count++;
             Bytes += bytes;
@@ -39,7 +39,7 @@ namespace Netling.Core.Models
                 StatusCodes.Add(statusCode, 1);
         }
 
-        public void AddError(double responseTime, Exception exception)
+        public void AddError(float responseTime, Exception exception)
         {
             Count++;
             ResponseTimes.Add(responseTime);

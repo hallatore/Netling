@@ -7,13 +7,13 @@ namespace Netling.Core.Models
     internal class CombinedWorkerThreadResult
     {
         public Dictionary<int, Second> Seconds { get; private set; }
-        public List<List<double>> ResponseTimes { get; private set; }
+        public List<List<float>> ResponseTimes { get; private set; }
         public TimeSpan Elapsed { get; private set; }
 
         public CombinedWorkerThreadResult(ConcurrentQueue<WorkerThreadResult> results, TimeSpan elapsed)
         {
             Seconds = new Dictionary<int, Second>();
-            ResponseTimes = new List<List<double>>();
+            ResponseTimes = new List<List<float>>();
             Elapsed = elapsed;
 
             foreach (var result in results)

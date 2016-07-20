@@ -83,9 +83,9 @@ namespace Netling.Core.Models
             Histogram = GenerateHistogram(responseTimes);
         }
 
-        private static double[] GetResponseTimes(List<List<double>> items)
+        private static float[] GetResponseTimes(List<List<float>> items)
         {
-            var result = new double[items.Sum(s => s.Count)];
+            var result = new float[items.Sum(s => s.Count)];
             var offset = 0;
 
             for (var i = 0; i < items.Count; i++)
@@ -100,7 +100,7 @@ namespace Netling.Core.Models
             return result;
         }
 
-        private int[] GenerateHistogram(double[] responeTimes)
+        private int[] GenerateHistogram(float[] responeTimes)
         {
             var splits = 80;
             var result = new int[splits];
@@ -120,7 +120,7 @@ namespace Netling.Core.Models
                 var stepMax = step + divider;
 
                 if (i + 1 == splits)
-                    stepMax = double.MaxValue;
+                    stepMax = float.MaxValue;
 
                 while (y < responeTimes.Length && responeTimes[y] < stepMax)
                 {

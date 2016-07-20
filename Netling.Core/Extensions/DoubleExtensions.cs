@@ -5,7 +5,7 @@ namespace Netling.Core.Extensions
 {
     internal static class DoubleExtensions
     {
-        public static double GetMedian(this double[] source)
+        public static double GetMedian(this float[] source)
         {
             var count = source.Length;
 
@@ -20,7 +20,7 @@ namespace Netling.Core.Extensions
             return (a + b) / 2;
         }
 
-        public static double GetStdDev(this double[] source)
+        public static double GetStdDev(this float[] source)
         {
             if (source.Length <= 0)
                 return 0;
