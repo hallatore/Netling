@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -21,7 +22,7 @@ namespace Netling.Core.Performance
         private ResponseType _responseType;
         private byte[] _requestPipelining = null;
 
-        public HttpWorker(Uri uri, HttpMethod httpMethod = HttpMethod.Get)
+        public HttpWorker(Uri uri, HttpMethod httpMethod = HttpMethod.Get, Dictionary<string, string> headers = null)
         {
             _buffer = new byte[8192];
             _bufferIndex = 0;
@@ -29,6 +30,10 @@ namespace Netling.Core.Performance
             _responseType = ResponseType.Unknown;
             _uri = uri;
             IPAddress ip;
+            var headersString = string.Empty;
+
+            if (headers != null && headers.Any())
+                headersString = string.Concat(headers.Select(h => "\r\n" + h.Key.Trim() + ": " + h.Value.Trim()));
 
             if (_uri.HostNameType == UriHostNameType.Dns)
             {
@@ -41,7 +46,7 @@ namespace Netling.Core.Performance
             }
             
             _endPoint = new IPEndPoint(ip, _uri.Port);
-            _request = Encoding.UTF8.GetBytes($"{httpMethod.ToString().ToUpper()} {_uri.PathAndQuery} HTTP/1.1\r\nAccept-Encoding: gzip, deflate, sdch\r\nHost: {_uri.Host}\r\nContent-Length: 0\r\n\r\n");
+            _request = Encoding.UTF8.GetBytes($"{httpMethod.ToString().ToUpper()} {_uri.PathAndQuery} HTTP/1.1\r\nAccept-Encoding: gzip, deflate, sdch\r\nHost: {_uri.Host}\r\nContent-Length: 0{headersString}\r\n\r\n");
         }
 
         private byte[] GetPipelineBuffer(int count)
