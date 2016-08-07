@@ -22,7 +22,7 @@ namespace Netling.Core.Performance
         private ResponseType _responseType;
         private byte[] _requestPipelining = null;
 
-        public HttpWorker(Uri uri, HttpMethod httpMethod = HttpMethod.Get, Dictionary<string, string> headers = null)
+        public HttpWorker(Uri uri, HttpMethod httpMethod = HttpMethod.Get, Dictionary<string, string> headers = null, byte[] data = null)
         {
             _buffer = new byte[8192];
             _bufferIndex = 0;
@@ -31,6 +31,7 @@ namespace Netling.Core.Performance
             _uri = uri;
             IPAddress ip;
             var headersString = string.Empty;
+            var contentLength = data != null ? data.Length : 0;
 
             if (headers != null && headers.Any())
                 headersString = string.Concat(headers.Select(h => "\r\n" + h.Key.Trim() + ": " + h.Value.Trim()));
@@ -46,7 +47,15 @@ namespace Netling.Core.Performance
             }
             
             _endPoint = new IPEndPoint(ip, _uri.Port);
-            _request = Encoding.UTF8.GetBytes($"{httpMethod.ToString().ToUpper()} {_uri.PathAndQuery} HTTP/1.1\r\nAccept-Encoding: gzip, deflate, sdch\r\nHost: {_uri.Host}\r\nContent-Length: 0{headersString}\r\n\r\n");
+            _request = Encoding.UTF8.GetBytes($"{httpMethod.ToString().ToUpper()} {_uri.PathAndQuery} HTTP/1.1\r\nAccept-Encoding: gzip, deflate, sdch\r\nHost: {_uri.Host}\r\nContent-Length: {contentLength}{headersString}\r\n\r\n");
+
+            if (data == null)
+                return;
+
+            var tmpRequest = new byte[_request.Length + data.Length];
+            Buffer.BlockCopy(_request, 0, tmpRequest, 0, _request.Length);
+            Buffer.BlockCopy(data, 0, tmpRequest, _request.Length, data.Length);
+            _request = tmpRequest;
         }
 
         private byte[] GetPipelineBuffer(int count)
