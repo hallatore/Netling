@@ -98,6 +98,7 @@
     <Compile Include="Performance\HttpHelper.cs" />
     <Compile Include="Performance\HttpHelperChunked.cs" />
     <Compile Include="Performance\HttpHelperContentLength.cs" />
+    <Compile Include="Performance\HttpMethod.cs" />
     <Compile Include="Performance\HttpWorker.cs" />
     <Compile Include="Performance\ResponseType.cs" />
     <Compile Include="Exceptions\UnknownResponseTypeException.cs" />
