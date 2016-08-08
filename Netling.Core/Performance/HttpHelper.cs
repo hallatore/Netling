@@ -94,7 +94,7 @@ namespace Netling.Core.Performance
 
         public static Stream GetStream(TcpClient client, Uri uri)
         {
-            if (uri.Scheme == "http")
+            if (uri.Scheme == Uri.UriSchemeHttp)
                 return client.GetStream();
             
             var stream = new SslStream(client.GetStream());
