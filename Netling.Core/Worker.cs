@@ -13,9 +13,9 @@ namespace Netling.Core
 {
     public static class Worker
     {
-        public static Task<WorkerResult> Run(Uri uri, int threads, bool threadAfinity, int pipelining, TimeSpan duration, CancellationToken cancellationToken)
+        public static Task<WorkerResult> Run(Uri uri, int threads, bool threadAffinity, int pipelining, TimeSpan duration, CancellationToken cancellationToken)
         {
-            return Run(uri, threads, threadAfinity, pipelining, duration, null, cancellationToken);
+            return Run(uri, threads, threadAffinity, pipelining, duration, null, cancellationToken);
         }
 
         public static Task<WorkerResult> Run(Uri uri, int count, CancellationToken cancellationToken)
@@ -23,18 +23,18 @@ namespace Netling.Core
             return Run(uri, 1, false, 1, TimeSpan.MaxValue, count, cancellationToken);
         }
 
-        private static Task<WorkerResult> Run(Uri uri, int threads, bool threadAfinity, int pipelining, TimeSpan duration, int? count, CancellationToken cancellationToken)
+        private static Task<WorkerResult> Run(Uri uri, int threads, bool threadAffinity, int pipelining, TimeSpan duration, int? count, CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {
-                var combinedWorkerThreadResult = QueueWorkerThreads(uri, threads, threadAfinity, pipelining, duration, count, cancellationToken);
-                var workerResult = new WorkerResult(uri, threads, threadAfinity, pipelining, combinedWorkerThreadResult.Elapsed);
+                var combinedWorkerThreadResult = QueueWorkerThreads(uri, threads, threadAffinity, pipelining, duration, count, cancellationToken);
+                var workerResult = new WorkerResult(uri, threads, threadAffinity, pipelining, combinedWorkerThreadResult.Elapsed);
                 workerResult.Process(combinedWorkerThreadResult);
                 return workerResult;
             });
         }
 
-        private static CombinedWorkerThreadResult QueueWorkerThreads(Uri uri, int threads, bool threadAfinity, int pipelining, TimeSpan duration, int? count, CancellationToken cancellationToken)
+        private static CombinedWorkerThreadResult QueueWorkerThreads(Uri uri, int threads, bool threadAffinity, int pipelining, TimeSpan duration, int? count, CancellationToken cancellationToken)
         {
             var results = new ConcurrentQueue<WorkerThreadResult>();
             var events = new List<ManualResetEventSlim>();
@@ -45,7 +45,7 @@ namespace Netling.Core
             {
                 var resetEvent = new ManualResetEventSlim(false);
 
-                ThreadHelper.QueueThread(i, threadAfinity, (threadIndex) =>
+                ThreadHelper.QueueThread(i, threadAffinity, (threadIndex) =>
                 {
                     DoWork(uri, duration, count, pipelining, results, sw, cancellationToken, resetEvent, threadIndex);
                 });

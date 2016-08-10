@@ -55,7 +55,7 @@ namespace Netling.Client
                 var duration = default(TimeSpan);
                 int? count = null;
                 var threads = Convert.ToInt32(((KeyValuePair<int, string>)Threads.SelectionBoxItem).Key);
-                var threadAfinity = ThreadAfinity.IsChecked.HasValue && ThreadAfinity.IsChecked.Value;
+                var threadAffinity = ThreadAffinity.IsChecked.HasValue && ThreadAffinity.IsChecked.Value;
                 var pipelining = Convert.ToInt32(Pipelining.SelectionBoxItem);
                 var durationText = (string)((ComboBoxItem)Duration.SelectedItem).Content;
                 StatusProgressbar.IsIndeterminate = false;
@@ -116,7 +116,7 @@ namespace Netling.Client
                 Duration.IsEnabled = false;
                 Url.IsEnabled = false;
                 Pipelining.IsEnabled = false;
-                ThreadAfinity.IsEnabled = false;
+                ThreadAffinity.IsEnabled = false;
                 StartButton.Content = "Cancel";
                 _running = true;
 
@@ -129,7 +129,7 @@ namespace Netling.Client
                 if (count.HasValue)
                     _task = Worker.Run(uri, count.Value, cancellationToken);
                 else
-                    _task = Worker.Run(uri, threads, threadAfinity, pipelining, duration, cancellationToken);
+                    _task = Worker.Run(uri, threads, threadAffinity, pipelining, duration, cancellationToken);
 
                 _task.GetAwaiter().OnCompleted(async () =>
                 {
@@ -177,7 +177,7 @@ namespace Netling.Client
             Duration.IsEnabled = true;
             Url.IsEnabled = true;
             Pipelining.IsEnabled = true;
-            ThreadAfinity.IsEnabled = true;
+            ThreadAffinity.IsEnabled = true;
             StartButton.IsEnabled = false;
             _cancellationTokenSource = null;
 

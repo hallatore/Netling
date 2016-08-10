@@ -7,11 +7,11 @@ namespace Netling.Core.Models
 {
     public class WorkerResult
     {
-        public WorkerResult(Uri uri, int threads, bool threadAfinity, int pipelining, TimeSpan elapsed)
+        public WorkerResult(Uri uri, int threads, bool threadAffinity, int pipelining, TimeSpan elapsed)
         {
             Url = uri.ToString();
             Threads = threads;
-            ThreadAfinity = threadAfinity;
+            ThreadAffinity = threadAffinity;
             Pipelining = pipelining;
             Elapsed = elapsed;
             Seconds = new Dictionary<int, Second>();
@@ -22,7 +22,7 @@ namespace Netling.Core.Models
 
         public string Url { get; private set; }
         public int Threads { get; private set; }
-        public bool ThreadAfinity { get; private set; }
+        public bool ThreadAffinity { get; private set; }
         public int Pipelining { get; private set; }
         public TimeSpan Elapsed { get; private set; }
 
