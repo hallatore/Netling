@@ -18,15 +18,12 @@ namespace Netling.Core.Utils
             }
         }
 
-        public static unsafe bool ContainsPossibly(byte[] buffer, int index, int end, ref Vector<byte> value)
+        public static bool ContainsPossibly(byte[] buffer, int index, int end, ref Vector<byte> value)
         {
             if (!Vector.IsHardwareAccelerated || index + Vector<byte>.Count >= end || index + Vector<byte>.Count >= buffer.Length)
                 return true;
 
-            fixed (byte* bufferPtr = buffer)
-            {
-                return !Vector.Equals(new Vector<byte>(buffer, index), value).Equals(Vector<byte>.Zero);
-            }
+            return !Vector.Equals(new Vector<byte>(buffer, index), value).Equals(Vector<byte>.Zero);
         }
     }
 }
