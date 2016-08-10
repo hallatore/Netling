@@ -8,19 +8,19 @@ namespace Netling.Core.Utils
 {
     internal static class ThreadHelper
     {
-        public static void QueueThread(int i, bool useThreadAfinity, Action<int> action)
+        public static void QueueThread(int i, bool useThreadAffinity, Action<int> action)
         {
             var thread = new Thread(() => {
-                if (useThreadAfinity)
+                if (useThreadAffinity)
                 {
                     Thread.BeginThreadAffinity();
-                    var afinity = GetAfinity(i + 1, Environment.ProcessorCount);
-                    GetCurrentThread().ProcessorAffinity = new IntPtr(1 << afinity);
+                    var affinity = GetAffinity(i + 1, Environment.ProcessorCount);
+                    GetCurrentThread().ProcessorAffinity = new IntPtr(1 << affinity);
                 }
 
                 action.Invoke(i);
 
-                if (useThreadAfinity)
+                if (useThreadAffinity)
                     Thread.EndThreadAffinity();
             });
             thread.Start();
@@ -38,14 +38,14 @@ namespace Netling.Core.Utils
                  select th).Single();
         }
 
-        private static int GetAfinity(int i, int cores)
+        private static int GetAffinity(int i, int cores)
         {
-            var afinity = i * 2 % cores;
+            var affinity = i * 2 % cores;
 
             if (i % cores >= cores / 2)
-                afinity++;
+                affinity++;
 
-            return afinity;
+            return affinity;
         }
     }
 }

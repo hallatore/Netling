@@ -30,7 +30,7 @@ namespace Netling.ConsoleClient
             };
 
             var extraArgs = p.Parse(args);
-            var threadAfinity = extraArgs.Contains("-a");
+            var threadAffinity = extraArgs.Contains("-a");
             var url = extraArgs.FirstOrDefault(e => e.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || e.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
             Uri uri = null;
 
@@ -39,7 +39,7 @@ namespace Netling.ConsoleClient
             else if (url != null && count.HasValue)
                 RunWithCount(uri, count.Value).Wait();
             else if (url != null)
-                RunWithDuration(uri, threads, threadAfinity, pipelining, TimeSpan.FromSeconds(duration)).Wait();
+                RunWithDuration(uri, threads, threadAffinity, pipelining, TimeSpan.FromSeconds(duration)).Wait();
             else
                 ShowHelp();
         }
@@ -55,20 +55,20 @@ namespace Netling.ConsoleClient
             return Run(uri, 1, false, 1, TimeSpan.MaxValue, count);
         }
 
-        private static Task RunWithDuration(Uri uri, int threads, bool threadAfinity, int pipelining, TimeSpan duration)
+        private static Task RunWithDuration(Uri uri, int threads, bool threadAffinity, int pipelining, TimeSpan duration)
         {
-            Console.WriteLine(StartRunWithDurationString, duration.TotalSeconds, uri, threads, pipelining, threadAfinity ? "ON" : "OFF");
-            return Run(uri, threads, threadAfinity, pipelining, duration, null);
+            Console.WriteLine(StartRunWithDurationString, duration.TotalSeconds, uri, threads, pipelining, threadAffinity ? "ON" : "OFF");
+            return Run(uri, threads, threadAffinity, pipelining, duration, null);
         }
 
-        private static async Task Run(Uri uri, int threads, bool threadAfinity, int pipelining, TimeSpan duration, int? count)
+        private static async Task Run(Uri uri, int threads, bool threadAffinity, int pipelining, TimeSpan duration, int? count)
         {
             WorkerResult result;
 
             if (count.HasValue)
                 result = await Worker.Run(uri, count.Value, new CancellationToken());
                     else
-            result = await Worker.Run(uri, threads, threadAfinity, pipelining, duration, new CancellationToken());
+            result = await Worker.Run(uri, threads, threadAffinity, pipelining, duration, new CancellationToken());
 
             Console.WriteLine(ResultString, 
                 result.Count,
@@ -116,7 +116,7 @@ Options:
     -d count        Duration of the run in seconds.
     -c count        Amount of requests to send on a single thread.
     -p count        Number of requests to pipeline.
-    -a              Use thread afinity on the worker threads.
+    -a              Use thread affinity on the worker threads.
 
 Examples: 
     netling http://localhost -t 8 -d 60
@@ -131,7 +131,7 @@ Running {0} test @ {1}";
 Running {0}s test @ {1}
     Threads:        {2}
     Pipelining:     {3}
-    Thread afinity: {4}";
+    Thread affinity: {4}";
 
         private const string ResultString = @"
 {0} requests in {1:0.##}s

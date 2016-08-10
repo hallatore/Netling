@@ -49,8 +49,8 @@
                 </ComboBox>
             </StackPanel>
             <StackPanel Margin="0,0,20,0">
-                <TextBlock Text="Thread afinity" VerticalAlignment="Top" HorizontalAlignment="Left" />
-                <CheckBox x:Name="ThreadAfinity" VerticalAlignment="Top" HorizontalAlignment="Left" Width="60" Margin="0,10,0,0"/>
+                <TextBlock Text="Thread affinity" VerticalAlignment="Top" HorizontalAlignment="Left" />
+                <CheckBox x:Name="ThreadAffinity" VerticalAlignment="Top" HorizontalAlignment="Left" Width="60" Margin="0,10,0,0"/>
             </StackPanel>
         </StackPanel>
         

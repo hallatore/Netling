@@ -11,7 +11,7 @@ namespace Netling.Client
                 Url = result.Url,
                 Threads = result.Threads,
                 Pipelining = result.Pipelining,
-                ThreadAfinity = result.ThreadAfinity,
+                ThreadAffinity = result.ThreadAffinity,
 
                 JobsPerSecond = result.RequestsPerSecond,
                 ElapsedSeconds = result.Elapsed.TotalSeconds,
@@ -29,7 +29,7 @@ namespace Netling.Client
         public double Bandwidth { get; set; }
         public double ElapsedSeconds { get; set; }
         public double JobsPerSecond { get; set; }
-        public bool ThreadAfinity { get; set; }
+        public bool ThreadAffinity { get; set; }
         public int Pipelining { get; set; }
         public int Threads { get; set; }
         public string Url { get; set; }
