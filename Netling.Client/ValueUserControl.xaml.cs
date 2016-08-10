@@ -38,24 +38,41 @@ namespace Netling.Client
             }
         }
 
-        public Brush ValueBrush
+        private BaseLine _baseLine;
+
+        public BaseLine BaseLine
         {
-            get { return ValueTextBlock.Foreground; }
+            get { return _baseLine; }
             set
             {
-                if (value != null)
+                _baseLine = value;
+
+                switch (value)
                 {
-                    ValueTextBlock.Foreground = value;
-                    UnitTextBlock.Foreground = value;
-                    ValueBorder.BorderBrush = value;
-                }
-                else
-                {
-                    ValueTextBlock.Foreground = new SolidColorBrush(Colors.Black);
-                    UnitTextBlock.Foreground = new SolidColorBrush(Colors.Black);
-                    ValueBorder.BorderBrush = new SolidColorBrush(Colors.DarkGray);
+                    case BaseLine.Equal:
+                        ValueTextBlock.Foreground = new SolidColorBrush(Colors.Black);
+                        UnitTextBlock.Foreground = new SolidColorBrush(Colors.Black);
+                        ValueBorder.BorderBrush = new SolidColorBrush(Colors.DarkGray);
+                        break;
+                    case BaseLine.Worse:
+                        ValueTextBlock.Foreground = new SolidColorBrush(Colors.Red);
+                        UnitTextBlock.Foreground = new SolidColorBrush(Colors.Red);
+                        ValueBorder.BorderBrush = (Brush)Application.Current.Resources["RedBrush"];
+                        break;
+                    case BaseLine.Better:
+                        ValueTextBlock.Foreground = new SolidColorBrush(Colors.Green);
+                        UnitTextBlock.Foreground = new SolidColorBrush(Colors.Green);
+                        ValueBorder.BorderBrush = new SolidColorBrush(Colors.Green);
+                        break;
                 }
             }
         }
+    }
+
+    public enum BaseLine
+    {
+        Equal,
+        Worse,
+        Better
     }
 }

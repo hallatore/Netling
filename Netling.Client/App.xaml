@@ -3,6 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <VisualBrush x:Key="RedBrush" TileMode="Tile" Viewport="0,0,8,8" ViewportUnits="Absolute" Viewbox="0,0,8,8" ViewboxUnits="Absolute">
+            <VisualBrush.Visual>
+                <Grid Background="Red">
+                    <Path Data="M 0 8 L 8 0" Stroke="White" StrokeThickness="1" />
+                </Grid>
+            </VisualBrush.Visual>
+        </VisualBrush>
     </Application.Resources>
 </Application>

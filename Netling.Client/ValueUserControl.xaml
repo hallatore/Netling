@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="60" d:DesignWidth="300" VerticalContentAlignment="Top">
     <Grid Margin="0,0,0,20">
-        <Border BorderThickness="4,0,0,0" BorderBrush="DarkGray" x:Name="ValueBorder">
+        <Border BorderThickness="4,0,0,0" x:Name="ValueBorder" BorderBrush="DarkGray">
             <Grid Margin="10,0,0,0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>

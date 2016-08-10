@@ -98,28 +98,28 @@ namespace Netling.Client
             ThreadAffinityValueUserControl.BaselineValue = null;
 
             RequestsValueUserControl.BaselineValue = null;
-            RequestsValueUserControl.ValueBrush = null;
+            RequestsValueUserControl.BaseLine = BaseLine.Equal;
 
             ElapsedValueUserControl.BaselineValue = null;
-            ElapsedValueUserControl.ValueBrush = null;
+            ElapsedValueUserControl.BaseLine = BaseLine.Equal;
 
             BandwidthValueUserControl.BaselineValue = null;
-            BandwidthValueUserControl.ValueBrush = null;
+            BandwidthValueUserControl.BaseLine = BaseLine.Equal;
 
             ErrorsValueUserControl.BaselineValue = null;
-            ErrorsValueUserControl.ValueBrush = null;
+            ErrorsValueUserControl.BaseLine = BaseLine.Equal;
 
             MedianValueUserControl.BaselineValue = null;
-            MedianValueUserControl.ValueBrush = null;
+            MedianValueUserControl.BaseLine = BaseLine.Equal;
 
             StdDevValueUserControl.BaselineValue = null;
-            StdDevValueUserControl.ValueBrush = null;
+            StdDevValueUserControl.BaseLine = BaseLine.Equal;
 
             MinValueUserControl.BaselineValue = null;
-            MinValueUserControl.ValueBrush = null;
+            MinValueUserControl.BaseLine = BaseLine.Equal;
 
             MaxValueUserControl.BaselineValue = null;
-            MaxValueUserControl.ValueBrush = null;
+            MaxValueUserControl.BaseLine = BaseLine.Equal;
         }
 
         private void LoadBaseline(ResultWindowItem baseline)
@@ -129,35 +129,35 @@ namespace Netling.Client
             ThreadAffinityValueUserControl.BaselineValue = baseline.ThreadAffinity ? "ON" : "OFF";
 
             RequestsValueUserControl.BaselineValue = $"{baseline.JobsPerSecond:#,0}";
-            RequestsValueUserControl.ValueBrush = GetValueBrush(_resultWindowItem.JobsPerSecond, baseline.JobsPerSecond);
+            RequestsValueUserControl.BaseLine = GetBaseline(_resultWindowItem.JobsPerSecond, baseline.JobsPerSecond);
 
             ElapsedValueUserControl.BaselineValue = $"{baseline.ElapsedSeconds:#,0}";
 
             BandwidthValueUserControl.BaselineValue = $"{baseline.Bandwidth:0}";
-            BandwidthValueUserControl.ValueBrush = GetValueBrush(_resultWindowItem.Bandwidth, baseline.Bandwidth);
+            BandwidthValueUserControl.BaseLine = GetBaseline(_resultWindowItem.Bandwidth, baseline.Bandwidth);
 
             ErrorsValueUserControl.BaselineValue = baseline.Errors.ToString();
-            ErrorsValueUserControl.ValueBrush = GetValueBrush(baseline.Errors, _resultWindowItem.Errors);
+            ErrorsValueUserControl.BaseLine = GetBaseline(baseline.Errors, _resultWindowItem.Errors);
 
             MedianValueUserControl.BaselineValue = string.Format(baseline.Median > 5 ? "{0:#,0}" : "{0:0.000}", baseline.Median);
-            MedianValueUserControl.ValueBrush = GetValueBrush(baseline.Median, _resultWindowItem.Median);
+            MedianValueUserControl.BaseLine = GetBaseline(baseline.Median, _resultWindowItem.Median);
 
             StdDevValueUserControl.BaselineValue = string.Format(baseline.StdDev > 5 ? "{0:#,0}" : "{0:0.000}", baseline.StdDev);
-            StdDevValueUserControl.ValueBrush = GetValueBrush(baseline.StdDev, _resultWindowItem.StdDev);
+            StdDevValueUserControl.BaseLine = GetBaseline(baseline.StdDev, _resultWindowItem.StdDev);
 
             MinValueUserControl.BaselineValue = string.Format(baseline.Min > 5 ? "{0:#,0}" : "{0:0.000}", baseline.Min);
-            MinValueUserControl.ValueBrush = GetValueBrush(baseline.Min, _resultWindowItem.Min);
+            MinValueUserControl.BaseLine = GetBaseline(baseline.Min, _resultWindowItem.Min);
 
             MaxValueUserControl.BaselineValue = string.Format(baseline.Max > 5 ? "{0:#,0}" : "{0:0.000}", baseline.Max);
-            MaxValueUserControl.ValueBrush = GetValueBrush(baseline.Max, _resultWindowItem.Max);
+            MaxValueUserControl.BaseLine = GetBaseline(baseline.Max, _resultWindowItem.Max);
         }
 
-        private Brush GetValueBrush(double v1, double v2)
+        private BaseLine GetBaseline(double v1, double v2)
         {
             if (Math.Abs(v1 - v2) < 0.001)
-                return null;
+                return BaseLine.Equal;
 
-            return v1 > v2 ? new SolidColorBrush(Colors.Green) : new SolidColorBrush(Colors.Red);
+            return v1 > v2 ? BaseLine.Better : BaseLine.Worse;
         }
     }
 
