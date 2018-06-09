@@ -17,8 +17,6 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <client:ValueUserControl x:Name="ThreadsValueUserControl" Title="Threads" Grid.Row="0" Grid.Column="0" Margin="0,0,0,20"/>
-        <client:ValueUserControl x:Name="PipeliningValueUserControl" Title="Pipelining" Grid.Row="0" Grid.Column="1"/>
-        <client:ValueUserControl x:Name="ThreadAffinityValueUserControl" Title="Thread affinity" Grid.Row="0" Grid.Column="2"/>
         <Grid Grid.Row="0" Grid.Column="3">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>

@@ -1,4 +1,4 @@
-namespace Netling.Core.Performance
+namespace Netling.Core.SocketWorker.Performance
 {
     public enum HttpMethod
     {

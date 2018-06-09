@@ -32,8 +32,6 @@ namespace Netling.Client
 
             Title = "Netling - " + _resultWindowItem.Url;
             ThreadsValueUserControl.Value = _resultWindowItem.Threads.ToString();
-            PipeliningValueUserControl.Value = _resultWindowItem.Pipelining.ToString();
-            ThreadAffinityValueUserControl.Value = _resultWindowItem.ThreadAffinity ? "ON" : "OFF";
 
             RequestsValueUserControl.Value = _resultWindowItem.JobsPerSecond.ToString("#,0");
             ElapsedValueUserControl.Value = $"{_resultWindowItem.ElapsedSeconds:0}";
@@ -94,8 +92,6 @@ namespace Netling.Client
         {
             _sender.ResultWindowItem = null;
             ThreadsValueUserControl.BaselineValue = null;
-            PipeliningValueUserControl.BaselineValue = null;
-            ThreadAffinityValueUserControl.BaselineValue = null;
 
             RequestsValueUserControl.BaselineValue = null;
             RequestsValueUserControl.BaseLine = BaseLine.Equal;
@@ -125,8 +121,6 @@ namespace Netling.Client
         private void LoadBaseline(ResultWindowItem baseline)
         {
             ThreadsValueUserControl.BaselineValue = baseline.Threads.ToString();
-            PipeliningValueUserControl.BaselineValue = baseline.Pipelining.ToString();
-            ThreadAffinityValueUserControl.BaselineValue = baseline.ThreadAffinity ? "ON" : "OFF";
 
             RequestsValueUserControl.BaselineValue = $"{baseline.JobsPerSecond:#,0}";
             RequestsValueUserControl.BaseLine = GetBaseline(_resultWindowItem.JobsPerSecond, baseline.JobsPerSecond);

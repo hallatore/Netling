@@ -8,10 +8,7 @@ namespace Netling.Client
         {
             return new ResultWindowItem
             {
-                Url = result.Url,
                 Threads = result.Threads,
-                Pipelining = result.Pipelining,
-                ThreadAffinity = result.ThreadAffinity,
 
                 JobsPerSecond = result.RequestsPerSecond,
                 ElapsedSeconds = result.Elapsed.TotalSeconds,
@@ -29,8 +26,6 @@ namespace Netling.Client
         public double Bandwidth { get; set; }
         public double ElapsedSeconds { get; set; }
         public double JobsPerSecond { get; set; }
-        public bool ThreadAffinity { get; set; }
-        public int Pipelining { get; set; }
         public int Threads { get; set; }
         public string Url { get; set; }
         public double Max { get; set; }

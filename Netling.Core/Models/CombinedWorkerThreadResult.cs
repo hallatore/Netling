@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Netling.Core.Models
 {
-    internal class CombinedWorkerThreadResult
+    public class CombinedWorkerThreadResult
     {
         public Dictionary<int, Second> Seconds { get; private set; }
         public List<List<float>> ResponseTimes { get; private set; }

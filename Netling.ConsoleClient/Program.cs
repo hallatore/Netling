@@ -3,9 +3,10 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NDesk.Options;
+using CommandLine.Options;
 using Netling.Core;
 using Netling.Core.Models;
+using Netling.Core.SocketWorker;
 
 namespace Netling.ConsoleClient
 {
@@ -17,20 +18,17 @@ namespace Netling.ConsoleClient
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en");
 
             var threads = 1;
-            var pipelining = 1;
             var duration = 10;
             int? count = null;
 
             var p = new OptionSet()
             {
                 {"t|threads=", (int v) => threads = v},
-                {"p|pipelining=", (int v) => pipelining = v},
                 {"d|duration=", (int v) => duration = v},
-                {"c|count=", (int? v) => count = v},
+                {"c|count=", (int? v) => count = v}
             };
 
             var extraArgs = p.Parse(args);
-            var threadAffinity = extraArgs.Contains("-a");
             var url = extraArgs.FirstOrDefault(e => e.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || e.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
             Uri uri = null;
 
@@ -39,7 +37,7 @@ namespace Netling.ConsoleClient
             else if (url != null && count.HasValue)
                 RunWithCount(uri, count.Value).Wait();
             else if (url != null)
-                RunWithDuration(uri, threads, threadAffinity, pipelining, TimeSpan.FromSeconds(duration)).Wait();
+                RunWithDuration(uri, threads, TimeSpan.FromSeconds(duration)).Wait();
             else
                 ShowHelp();
         }
@@ -52,23 +50,24 @@ namespace Netling.ConsoleClient
         private static Task RunWithCount(Uri uri, int count)
         {
             Console.WriteLine(StartRunWithCountString, count, uri);
-            return Run(uri, 1, false, 1, TimeSpan.MaxValue, count);
+            return Run(uri, 1, TimeSpan.MaxValue, count);
         }
 
-        private static Task RunWithDuration(Uri uri, int threads, bool threadAffinity, int pipelining, TimeSpan duration)
+        private static Task RunWithDuration(Uri uri, int threads, TimeSpan duration)
         {
-            Console.WriteLine(StartRunWithDurationString, duration.TotalSeconds, uri, threads, pipelining, threadAffinity ? "ON" : "OFF");
-            return Run(uri, threads, threadAffinity, pipelining, duration, null);
+            Console.WriteLine(StartRunWithDurationString, duration.TotalSeconds, uri, threads);
+            return Run(uri, threads, duration, null);
         }
 
-        private static async Task Run(Uri uri, int threads, bool threadAffinity, int pipelining, TimeSpan duration, int? count)
+        private static async Task Run(Uri uri, int threads, TimeSpan duration, int? count)
         {
             WorkerResult result;
+            var worker = new Worker(new SocketWorkerJob(uri));
 
             if (count.HasValue)
-                result = await Worker.Run(uri, count.Value, new CancellationToken());
-                    else
-            result = await Worker.Run(uri, threads, threadAffinity, pipelining, duration, new CancellationToken());
+                result = await worker.Run(count.Value, new CancellationToken());
+            else
+                result = await worker.Run(threads, duration, new CancellationToken());
 
             Console.WriteLine(ResultString, 
                 result.Count,
@@ -109,29 +108,24 @@ namespace Netling.ConsoleClient
         }
 
         private const string HelpString = @"
-Usage: netling [-t threads] [-d duration] [-p pipelining] [-a] url
+Usage: netling [-t threads] [-d duration] url
 
 Options:
     -t count        Number of threads to spawn.
     -d count        Duration of the run in seconds.
     -c count        Amount of requests to send on a single thread.
-    -p count        Number of requests to pipeline.
-    -a              Use thread affinity on the worker threads.
 
-Examples: 
-    netling http://localhost -t 8 -d 60
-    netling http://localhost -c 3000 
-    netling http://localhost
+Examples:
+    netling http://localhost:5000/
+    netling http://localhost:5000/ -t 8 -d 60
+    netling http://localhost:5000/ -c 3000
 ";
 
         private const string StartRunWithCountString = @"
 Running {0} test @ {1}";
 
         private const string StartRunWithDurationString = @"
-Running {0}s test @ {1}
-    Threads:        {2}
-    Pipelining:     {3}
-    Thread affinity: {4}";
+Running {0}s test with {2} threads @ {1}";
 
         private const string ResultString = @"
 {0} requests in {1:0.##}s

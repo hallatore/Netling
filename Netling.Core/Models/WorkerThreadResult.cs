@@ -1,26 +1,24 @@
-using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace Netling.Core.Models
 {
-    internal class WorkerThreadResult
+    public class WorkerThreadResult
     {
-        public Dictionary<int, Second> Seconds { get; private set; }
+        public Dictionary<int, Second> Seconds { get; }
 
         public WorkerThreadResult()
         {
             Seconds = new Dictionary<int, Second>();
         }
 
-        public void Add(int elapsed, long bytes, float responsetime, int statusCode, bool trackResponseTime)
+        public void Add(int elapsed, long bytes, float responsetime, bool trackResponseTime)
         {
-            GetItem(elapsed).Add(bytes, responsetime, statusCode, trackResponseTime);
+            GetItem(elapsed).Add(bytes, responsetime, trackResponseTime);
         }
 
-        public void AddError(int elapsed, float responsetime, Exception exception)
+        public void AddError(int elapsed, float responsetime, bool trackResponseTime)
         {
-            GetItem(elapsed).AddError(responsetime, exception);
+            GetItem(elapsed).AddError(responsetime, trackResponseTime);
         }
 
         private Second GetItem(int elapsed)

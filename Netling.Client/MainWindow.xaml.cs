@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Netling.Core;
 using Netling.Core.Models;
+using Netling.Core.SocketWorker;
 
 namespace Netling.Client
 {
@@ -55,8 +56,6 @@ namespace Netling.Client
                 var duration = default(TimeSpan);
                 int? count = null;
                 var threads = Convert.ToInt32(((KeyValuePair<int, string>)Threads.SelectionBoxItem).Key);
-                var threadAffinity = ThreadAffinity.IsChecked.HasValue && ThreadAffinity.IsChecked.Value;
-                var pipelining = Convert.ToInt32(Pipelining.SelectionBoxItem);
                 var durationText = (string)((ComboBoxItem)Duration.SelectedItem).Content;
                 StatusProgressbar.IsIndeterminate = false;
 
@@ -107,16 +106,12 @@ namespace Netling.Client
                 if (string.IsNullOrWhiteSpace(Url.Text))
                     return;
 
-                Uri uri;
-
-                if (!Uri.TryCreate(Url.Text.Trim(), UriKind.Absolute, out uri))
+                if (!Uri.TryCreate(Url.Text.Trim(), UriKind.Absolute, out var uri))
                     return;
                 
                 Threads.IsEnabled = false;
                 Duration.IsEnabled = false;
                 Url.IsEnabled = false;
-                Pipelining.IsEnabled = false;
-                ThreadAffinity.IsEnabled = false;
                 StartButton.Content = "Cancel";
                 _running = true;
 
@@ -126,10 +121,12 @@ namespace Netling.Client
                 StatusProgressbar.Value = 0;
                 StatusProgressbar.Visibility = Visibility.Visible;
 
+                var worker = new Worker(new SocketWorkerJob(uri));
+
                 if (count.HasValue)
-                    _task = Worker.Run(uri, count.Value, cancellationToken);
+                    _task = worker.Run(count.Value, cancellationToken);
                 else
-                    _task = Worker.Run(uri, threads, threadAffinity, pipelining, duration, cancellationToken);
+                    _task = worker.Run(threads, duration, cancellationToken);
 
                 _task.GetAwaiter().OnCompleted(async () =>
                 {
@@ -172,12 +169,13 @@ namespace Netling.Client
 
         private async Task JobCompleted()
         {
+            if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
+                _cancellationTokenSource.Cancel();
+
             _running = false;
             Threads.IsEnabled = true;
             Duration.IsEnabled = true;
             Url.IsEnabled = true;
-            Pipelining.IsEnabled = true;
-            ThreadAffinity.IsEnabled = true;
             StartButton.IsEnabled = false;
             _cancellationTokenSource = null;
 

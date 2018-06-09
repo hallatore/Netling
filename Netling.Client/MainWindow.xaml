@@ -24,34 +24,6 @@
                     <ComboBoxItem>10000 runs on 1 thread</ComboBoxItem>
                 </ComboBox>
             </StackPanel>
-            <StackPanel Margin="0,0,20,0">
-                <TextBlock Text="Pipelining" VerticalAlignment="Top" HorizontalAlignment="Left"/>
-                <ComboBox x:Name="Pipelining" VerticalAlignment="Top" HorizontalAlignment="Left" Width="60" Height="25" Margin="0,5,0,0">
-                    <ComboBoxItem IsSelected="True">1</ComboBoxItem>
-                    <ComboBoxItem>2</ComboBoxItem>
-                    <ComboBoxItem>3</ComboBoxItem>
-                    <ComboBoxItem>4</ComboBoxItem>
-                    <ComboBoxItem>5</ComboBoxItem>
-                    <ComboBoxItem>10</ComboBoxItem>
-                    <ComboBoxItem>20</ComboBoxItem>
-                    <ComboBoxItem>30</ComboBoxItem>
-                    <ComboBoxItem>40</ComboBoxItem>
-                    <ComboBoxItem>50</ComboBoxItem>
-                    <ComboBoxItem>60</ComboBoxItem>
-                    <ComboBoxItem>70</ComboBoxItem>
-                    <ComboBoxItem>80</ComboBoxItem>
-                    <ComboBoxItem>90</ComboBoxItem>
-                    <ComboBoxItem>100</ComboBoxItem>
-                    <ComboBoxItem>200</ComboBoxItem>
-                    <ComboBoxItem>300</ComboBoxItem>
-                    <ComboBoxItem>400</ComboBoxItem>
-                    <ComboBoxItem>500</ComboBoxItem>
-                </ComboBox>
-            </StackPanel>
-            <StackPanel Margin="0,0,20,0">
-                <TextBlock Text="Thread affinity" VerticalAlignment="Top" HorizontalAlignment="Left" />
-                <CheckBox x:Name="ThreadAffinity" VerticalAlignment="Top" HorizontalAlignment="Left" Width="60" Margin="0,10,0,0"/>
-            </StackPanel>
         </StackPanel>
         
         <TextBlock Text="URL" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,61,0,0"/>

@@ -1,8 +1,8 @@
-﻿namespace Netling.Core.Extensions
+﻿namespace Netling.Core.SocketWorker.Extensions
 {
-    internal static class ByteExtensions
+    public static class ByteExtensions
     {
-        public static int ConvertToInt(this byte[] bytes, int start, int length, int end)
+        public static int ConvertToInt(byte[] bytes, int start, int length, int end)
         {
             var result = 0;
 

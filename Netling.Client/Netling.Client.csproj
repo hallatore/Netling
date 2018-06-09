@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Netling.Client</RootNamespace>
     <AssemblyName>Netling.Client</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -110,6 +110,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -193,6 +194,14 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Netling.Core.HttpClientWorker\Netling.Core.HttpClientWorker.csproj">
+      <Project>{1098eaa8-0341-44e9-8fde-d05a2a56e083}</Project>
+      <Name>Netling.Core.HttpClientWorker</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Netling.Core.SocketWorker\Netling.Core.SocketWorker.csproj">
+      <Project>{10e2f65d-8993-409a-abe5-59cc2697cb32}</Project>
+      <Name>Netling.Core.SocketWorker</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Netling.Core\Netling.Core.csproj">
       <Project>{84ceec3f-5fcf-4ca5-a6d7-f83cf7ea0b52}</Project>
       <Name>Netling.Core</Name>

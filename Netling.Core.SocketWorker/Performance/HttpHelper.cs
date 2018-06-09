@@ -1,32 +1,26 @@
-﻿using System;
-using System.IO;
-using System.Net.Security;
-using System.Net.Sockets;
-using System.Security.Authentication;
-using System.Security.Cryptography.X509Certificates;
-using Netling.Core.Extensions;
+﻿using System.Runtime.CompilerServices;
+using Netling.Core.SocketWorker.Extensions;
 
-namespace Netling.Core.Performance
+namespace Netling.Core.SocketWorker.Performance
 {
-    internal static class HttpHelper
+    public static class HttpHelper
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ResponseType GetResponseType(byte[] buffer, int start, int end)
         {
-            int index;
-            int length;
-
-            if (SeekHeader(buffer, HttpHeaders.ContentLength, start, end, out index, out length))
+            if (SeekHeader(buffer, HttpHeaders.ContentLength, start, end, out _, out _))
                 return ResponseType.ContentLength;
 
-            if (SeekHeader(buffer, HttpHeaders.TransferEncoding, start, end, out index, out length))
+            if (SeekHeader(buffer, HttpHeaders.TransferEncoding, start, end, out _, out _))
                 return ResponseType.Chunked;
 
             return ResponseType.Unknown;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetStatusCode(byte[] buffer, int start, int end)
         {
-            return buffer.ConvertToInt(start + 9, 3, end);
+            return ByteExtensions.ConvertToInt(buffer, start + 9, 3, end);
         }
 
         // HTTP/1.1 200 OK\r\nDate: Wed, 06 Jul 2016 18:26:27 GMT\r\nContent-Length: 13\r\nContent-Type: text/plain\r\nServer: Kestrel\r\n\r\nHello, World!
@@ -62,7 +56,8 @@ namespace Netling.Core.Performance
             length = r - index;
             return true;
         }
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int SeekReturn(byte[] buffer, int start, int end)
         {
             while (start + 1 < end)
@@ -76,6 +71,7 @@ namespace Netling.Core.Performance
             return -1;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int SeekHeaderEnd(byte[] buffer, int start, int end)
         {
             while (start + 3 < end)
@@ -90,17 +86,6 @@ namespace Netling.Core.Performance
             }
 
             return -1;
-        }
-
-        public static Stream GetStream(TcpClient client, Uri uri)
-        {
-            if (uri.Scheme == Uri.UriSchemeHttp)
-                return client.GetStream();
-            
-            var stream = new SslStream(client.GetStream());
-            var xc = new X509Certificate2Collection();
-            stream.AuthenticateAsClient(uri.Host, xc, SslProtocols.Tls, false);
-            return stream;
         }
     }
 }
