@@ -41,7 +41,7 @@ namespace Netling.Tests
         [Test]
         public void HttpHelper_SeekHeader()
         {
-            HttpHelper.SeekHeader(_response.Span, HttpHeaders.ContentLength.Span, out var index, out var length);
+            HttpHelper.SeekHeader(_response.Span, CommonStrings.HeaderContentLength.Span, out var index, out var length);
             Assert.AreEqual(70, index);
             Assert.AreEqual(2, length);
         }

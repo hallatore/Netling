@@ -16,7 +16,7 @@ namespace Netling.Core.SocketWorker.Performance
         public HttpWorker(IHttpWorkerClient client, Uri uri, HttpMethod httpMethod = HttpMethod.Get, Dictionary<string, string> headers = null, byte[] data = null)
         {
             _client = client;
-            _buffer = new byte[8192].AsMemory();
+            _buffer = new Memory<byte>(new byte[8192]);
             _responseType = ResponseType.Unknown;
             var headersString = string.Empty;
             var contentLength = data?.Length ?? 0;
@@ -36,18 +36,21 @@ namespace Netling.Core.SocketWorker.Performance
 
             _request = request.AsMemory();
         }
-        
-        public void Write()
+
+        public (int length, int statusCode) Send()
         {
             _client.Write(_request.Span);
-        }
-
-        public int Read(out int statusCode)
-        {
             var read = _client.Read(_buffer);
+
+            if (read == 0)
+            {
+                _client.Reset();
+                throw new EmptyResultException();
+            }
+
             var length = read;
             var responseSpan = _buffer.Span.Slice(0, read);
-            statusCode = HttpHelper.GetStatusCode(responseSpan);
+            var statusCode = HttpHelper.GetStatusCode(responseSpan);
             _responseType = HttpHelper.GetResponseType(responseSpan);
 
             if (_responseType == ResponseType.ContentLength)
@@ -59,7 +62,7 @@ namespace Netling.Core.SocketWorker.Performance
                     length += _client.Read(_buffer);
                 }
                 
-                return length;
+                return (length, statusCode);
             }
             
             if (_responseType == ResponseType.Chunked)
@@ -70,7 +73,7 @@ namespace Netling.Core.SocketWorker.Performance
                     length += read;
                 }
 
-                return length;
+                return (length, statusCode);
             }
             
             throw new UnknownResponseTypeException();

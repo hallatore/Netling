@@ -6,33 +6,19 @@ namespace Netling.Core.SocketWorker.Performance
     {
         public static bool IsEndOfChunkedStream(ReadOnlySpan<byte> buffer)
         {
-            if (buffer.Length < 5)
-                return true;
-
-            return buffer[buffer.Length - 5] == 48 &&
-                   buffer[buffer.Length - 4] == 13 &&
-                   buffer[buffer.Length - 3] == 10 &&
-                   buffer[buffer.Length - 2] == 13 &&
-                   buffer[buffer.Length - 1] == 10;
+            return buffer.Length >= 5 && buffer.Slice(buffer.Length - 5, 5).SequenceEqual(CommonStrings.EndOfChunkedResponse.Span);
         }
 
         public static int SeekEndOfChunkedStream(ReadOnlySpan<byte> buffer)
         {
-            var start = 0;
+            var index = buffer.IndexOf(CommonStrings.EndOfChunkedResponse.Span);
 
-            while (start + 4 < buffer.Length)
+            if (index < 0)
             {
-                if (buffer[start + 0] == 48 &&
-                    buffer[start + 1] == 13 &&
-                    buffer[start + 2] == 10 &&
-                    buffer[start + 3] == 13 &&
-                    buffer[start + 4] == 10)
-                    return start + 5;
-
-                start++;
+                return index;
             }
 
-            return -1;
+            return index + CommonStrings.EndOfChunkedResponse.Span.Length;
         }
     }
 }

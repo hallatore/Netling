@@ -7,13 +7,13 @@ namespace Netling.Core.SocketWorker.Performance
     {
         public static int GetHeaderContentLength(ReadOnlySpan<byte> buffer)
         {
-            HttpHelper.SeekHeader(buffer, HttpHeaders.ContentLength.Span, out var index, out var length);
+            HttpHelper.SeekHeader(buffer, CommonStrings.HeaderContentLength.Span, out var index, out var length);
             return ByteExtensions.ConvertToInt(buffer.Slice(index, length));
         }
         
         public static int GetResponseLength(ReadOnlySpan<byte> buffer)
         {
-            var headerEnd = HttpHelper.SeekHeaderEnd(buffer);
+            var headerEnd = buffer.IndexOf(CommonStrings.HeaderEnd.Span);
 
             if (headerEnd < 0)
             {

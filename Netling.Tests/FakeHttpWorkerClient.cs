@@ -26,10 +26,14 @@ namespace Netling.Tests
             source.CopyTo(buffer.Span);
             return source.Length;
         }
-        
+
         public void Write(ReadOnlySpan<byte> buffer)
         {
             _index = 0;
+        }
+
+        public void Reset()
+        {
         }
     }
 }

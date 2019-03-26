@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using System.Threading.Tasks;
 using Netling.Core.Models;
 using Netling.Core.SocketWorker.Performance;
@@ -31,28 +28,13 @@ namespace Netling.Core.SocketWorker
             _stopwatch.Start();
             _localStopwatch = new Stopwatch();
             _workerThreadResult = workerThreadResult;
-
-            IPAddress ip;
-            
-            if (_uri.HostNameType == UriHostNameType.Dns)
-            {
-                var host = Dns.GetHostEntry(_uri.Host);
-                ip = host.AddressList.First(i => i.AddressFamily == AddressFamily.InterNetwork);
-            }
-            else
-            {
-                ip = IPAddress.Parse(_uri.Host);
-            }
-            
-            var endPoint = new IPEndPoint(ip, _uri.Port);
-            _httpWorker = new HttpWorker(new HttpWorkerClient(endPoint, uri), uri);
+            _httpWorker = new HttpWorker(new HttpWorkerClient(uri), uri);
         }
 
         public Task DoWork()
         {
             _localStopwatch.Restart();
-            _httpWorker.Write();
-            var length = _httpWorker.Read(out var statusCode);
+            var (length, statusCode) = _httpWorker.Send();
 
             if (statusCode < 400)
                 _workerThreadResult.Add((int)_stopwatch.ElapsedMilliseconds, length, (float) _localStopwatch.ElapsedTicks / Stopwatch.Frequency * 1000, _index < 10);

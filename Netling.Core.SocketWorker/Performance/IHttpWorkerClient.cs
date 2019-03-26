@@ -6,5 +6,6 @@ namespace Netling.Core.SocketWorker.Performance
     {
         int Read(Memory<byte> buffer);
         void Write(ReadOnlySpan<byte> buffer);
+        void Reset();
     }
 }
