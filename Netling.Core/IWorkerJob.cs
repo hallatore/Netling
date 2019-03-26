@@ -5,8 +5,8 @@ namespace Netling.Core
 {
     public interface IWorkerJob
     {
-        Task<IWorkerJob> Init(int index, WorkerThreadResult workerThreadResult);
-        Task DoWork();
+        ValueTask<IWorkerJob> Init(int index, WorkerThreadResult workerThreadResult);
+        ValueTask DoWork();
         WorkerThreadResult GetResults();
     }
 }

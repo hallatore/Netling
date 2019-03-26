@@ -34,7 +34,7 @@ namespace Netling.Core.HttpClientWorker
             _httpClient = new HttpClient();
         }
 
-        public async Task DoWork()
+        public async ValueTask DoWork()
         {
             _localStopwatch.Restart();
 
@@ -56,9 +56,9 @@ namespace Netling.Core.HttpClientWorker
             return _workerThreadResult;
         }
 
-        public Task<IWorkerJob> Init(int index, WorkerThreadResult workerThreadResult)
+        public ValueTask<IWorkerJob> Init(int index, WorkerThreadResult workerThreadResult)
         {
-            return Task.FromResult<IWorkerJob>(new HttpClientWorkerJob(index, _uri, workerThreadResult));
+            return new ValueTask<IWorkerJob>(new HttpClientWorkerJob(index, _uri, workerThreadResult));
         }
     }
 }
