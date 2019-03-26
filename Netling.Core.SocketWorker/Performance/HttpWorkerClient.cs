@@ -37,7 +37,7 @@ namespace Netling.Core.SocketWorker.Performance
                 var optionInValue = BitConverter.GetBytes(1);
                 _client.Client.IOControl(sioLoopbackFastPath, optionInValue, null);
             }
-            catch (SocketException) { }
+            catch (Exception) { }
             
             _client.NoDelay = true;
             _client.SendTimeout = 10000;
