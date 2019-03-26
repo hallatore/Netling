@@ -44,20 +44,6 @@ namespace Netling.Client
             MinTextBlock.Text = MinValueUserControl.Value + " ms";
             MaxTextBlock.Text = MaxValueUserControl.Value + " ms";
 
-            var errors = new Dictionary<string, string>();
-
-            foreach (var statusCode in workerResult.StatusCodes)
-            {
-                errors.Add(statusCode.Key.ToString(), statusCode.Value.ToString("#,0"));
-            }
-
-            foreach (var exception in workerResult.Exceptions)
-            {
-                errors.Add(exception.Key.ToString(), exception.Value.ToString("#,0"));
-            }
-
-            ErrorsListView.ItemsSource = errors;
-
             if (_sender.ResultWindowItem != null)
                 LoadBaseline(_sender.ResultWindowItem);
         }

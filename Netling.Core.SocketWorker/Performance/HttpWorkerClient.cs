@@ -3,7 +3,6 @@ using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 
@@ -26,7 +25,7 @@ namespace Netling.Core.SocketWorker.Performance
 
         private void CheckInit()
         {
-            if (_client != null && _client.Connected)
+            if (_client?.Connected == true)
                 return;
 
             _client?.Close();
@@ -58,23 +57,16 @@ namespace Netling.Core.SocketWorker.Performance
             return stream;
         }
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Write(byte[] buffer, int offset, int count)
+        public void Write(ReadOnlySpan<byte> buffer)
         {
             CheckInit();
-            Stream.Write(buffer, offset, count);
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Flush()
-        {
+            Stream.Write(buffer);
             Stream.Flush();
         }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int Read(byte[] buffer, int offset, int count)
+
+        public int Read(Memory<byte> buffer)
         {
-            return Stream.Read(buffer, offset, count);
+            return Stream.Read(buffer.Span);
         }
 
         public void Dispose()

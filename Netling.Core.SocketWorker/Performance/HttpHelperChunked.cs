@@ -1,22 +1,26 @@
-﻿namespace Netling.Core.SocketWorker.Performance
+﻿using System;
+
+namespace Netling.Core.SocketWorker.Performance
 {
-    internal static class HttpHelperChunked
+    public static class HttpHelperChunked
     {
-        public static bool IsEndOfChunkedStream(byte[] buffer, int end)
+        public static bool IsEndOfChunkedStream(ReadOnlySpan<byte> buffer)
         {
-            if (end < 5)
+            if (buffer.Length < 5)
                 return true;
 
-            return buffer[end - 5] == 48 &&
-                   buffer[end - 4] == 13 &&
-                   buffer[end - 3] == 10 &&
-                   buffer[end - 2] == 13 &&
-                   buffer[end - 1] == 10;
+            return buffer[buffer.Length - 5] == 48 &&
+                   buffer[buffer.Length - 4] == 13 &&
+                   buffer[buffer.Length - 3] == 10 &&
+                   buffer[buffer.Length - 2] == 13 &&
+                   buffer[buffer.Length - 1] == 10;
         }
 
-        public static int SeekEndOfChunkedStream(byte[] buffer, int start, int end)
+        public static int SeekEndOfChunkedStream(ReadOnlySpan<byte> buffer)
         {
-            while (start + 4 < end)
+            var start = 0;
+
+            while (start + 4 < buffer.Length)
             {
                 if (buffer[start + 0] == 48 &&
                     buffer[start + 1] == 13 &&

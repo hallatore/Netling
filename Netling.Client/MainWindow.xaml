@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Netling.Client.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Netling" Width="500" Height="220" ResizeMode="NoResize">
+        Title="Netling" Width="500" Height="223" ResizeMode="NoResize">
     <Grid Margin="10">
         <StackPanel Orientation="Horizontal">
             <StackPanel Margin="0,0,20,0">

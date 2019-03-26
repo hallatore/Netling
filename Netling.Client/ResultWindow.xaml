@@ -47,16 +47,6 @@
             <TabItem Header="REQUEST THROUGHPUT" FontSize="11">
                 <client:LineGraphControl Margin="-9,0,0,0" x:Name="RequestsPerSecondGraph"/>
             </TabItem>
-            <TabItem Header="STATUS CODES &amp; EXCEPTIONS" FontSize="11">
-                <ListView BorderThickness="0" Name="ErrorsListView">
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn Header="Name" Width="240" DisplayMemberBinding="{Binding Key}" />
-                            <GridViewColumn Header="Count" Width="100" DisplayMemberBinding="{Binding Value}" />
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-            </TabItem>
         </TabControl>
     </Grid>
 </Window>

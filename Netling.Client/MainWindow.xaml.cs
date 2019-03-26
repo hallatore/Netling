@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Netling.Core;
+using Netling.Core.HttpClientWorker;
 using Netling.Core.Models;
 using Netling.Core.SocketWorker;
 

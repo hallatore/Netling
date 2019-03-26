@@ -20,19 +20,14 @@ namespace Netling.Tests
             
         }
 
-        public void Flush()
+        public int Read(Memory<byte> buffer)
         {
+            var source = Encoding.UTF8.GetBytes(_results[_index++]).AsSpan();
+            source.CopyTo(buffer.Span);
+            return source.Length;
         }
-
-        public int Read(byte[] buffer, int offset, int count)
-        {
-            var source = Encoding.UTF8.GetBytes(_results[_index++]);
-            var length = Math.Min(count, source.Length);
-            Buffer.BlockCopy(source, 0, buffer, offset, length);
-            return length;
-        }
-
-        public void Write(byte[] buffer, int offset, int count)
+        
+        public void Write(ReadOnlySpan<byte> buffer)
         {
             _index = 0;
         }

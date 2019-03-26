@@ -4,8 +4,7 @@ namespace Netling.Core.SocketWorker.Performance
 {
     public interface IHttpWorkerClient : IDisposable
     {
-        int Read(byte[] buffer, int offset, int count);
-        void Write(byte[] buffer, int offset, int count);
-        void Flush();
+        int Read(Memory<byte> buffer);
+        void Write(ReadOnlySpan<byte> buffer);
     }
 }

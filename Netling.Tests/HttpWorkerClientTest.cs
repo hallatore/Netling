@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
+using Netling.Core.SocketWorker.Performance;
 using NUnit.Framework;
 
 namespace Netling.Tests
@@ -6,7 +8,7 @@ namespace Netling.Tests
     [TestFixture]  
     public class HttpWorkerClientTest
     {
-        private byte[] _request;
+        private ReadOnlyMemory<byte> _request;
         private string _response;
 
         [SetUp]
@@ -19,13 +21,12 @@ namespace Netling.Tests
         [Test]
         public void ReadOneRequest()
         {
-            var client = new FakeHttpWorkerClient(_response);
-            var buffer = new byte[8192];
-            client.Write(_request, 0, _request.Length);
-            client.Flush();
+            var client = (IHttpWorkerClient)new FakeHttpWorkerClient(_response);
+            var buffer = new byte[8192].AsMemory();
+            client.Write(_request.Span);
 
-            var length = client.Read(buffer, 0, buffer.Length);
-            var response = Encoding.UTF8.GetString(buffer, 0, length);
+            var length = client.Read(buffer);
+            var response = Encoding.UTF8.GetString(buffer.ToArray(), 0, length);
 
             Assert.AreEqual(132, length);
             Assert.AreEqual(_response, response);
@@ -34,14 +35,13 @@ namespace Netling.Tests
         [Test]
         public void ReadOneRequestSplit()
         {
-            var client = new FakeHttpWorkerClient("HTTP/1.1 200 OK\r\nDate: Wed, 06 Jul 2016 18:26:27 GMT\r\nContent-Length: 13\r\nContent-Type: text/plain\r\nServer: Kestrel\r\n\r\n", "Hello, World!");
-            var buffer = new byte[8192];
-            client.Write(_request, 0, _request.Length);
-            client.Flush();
+            var client = (IHttpWorkerClient)new FakeHttpWorkerClient("HTTP/1.1 200 OK\r\nDate: Wed, 06 Jul 2016 18:26:27 GMT\r\nContent-Length: 13\r\nContent-Type: text/plain\r\nServer: Kestrel\r\n\r\n", "Hello, World!");
+            var buffer = new byte[8192].AsMemory();
+            client.Write(_request.Span);
 
-            var length = client.Read(buffer, 0, buffer.Length);
-            length += client.Read(buffer, length, buffer.Length);
-            var response = Encoding.UTF8.GetString(buffer, 0, length);
+            var length = client.Read(buffer);
+            length += client.Read(buffer.Slice(length));
+            var response = Encoding.UTF8.GetString(buffer.ToArray(), 0, length);
 
             Assert.AreEqual(132, length);
             Assert.AreEqual(_response, response);

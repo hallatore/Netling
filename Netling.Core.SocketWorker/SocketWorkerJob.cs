@@ -52,7 +52,6 @@ namespace Netling.Core.SocketWorker
         {
             _localStopwatch.Restart();
             _httpWorker.Write();
-            _httpWorker.Flush();
             var length = _httpWorker.Read(out var statusCode);
 
             if (statusCode < 400)
