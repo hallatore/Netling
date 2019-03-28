@@ -13,15 +13,20 @@ namespace Netling.Core.SocketWorker.Performance
         
         public static int GetResponseLength(ReadOnlySpan<byte> buffer)
         {
-            var headerEnd = buffer.IndexOf(CommonStrings.HeaderEnd.Span);
-
-            if (headerEnd < 0)
+            if (!HttpHelper.SeekHeader(buffer, CommonStrings.HeaderContentLength.Span, out var index, out var length))
             {
                 return -1;
             }
 
-            var contentLength = GetHeaderContentLength(buffer);
-            return headerEnd + 4 + contentLength;
+            var headerEndIndex = buffer.Slice(index + length).IndexOf(CommonStrings.HeaderEnd.Span);
+
+            if (headerEndIndex < 0)
+            {
+                return -1;
+            }
+
+            var contentLength = ByteExtensions.ConvertToInt(buffer.Slice(index, length));
+            return index + length + headerEndIndex + 4 + contentLength;
         }
     }
 }

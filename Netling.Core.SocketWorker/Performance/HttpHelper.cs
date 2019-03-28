@@ -7,12 +7,12 @@ namespace Netling.Core.SocketWorker.Performance
     {
         public static ResponseType GetResponseType(ReadOnlySpan<byte> buffer)
         {
-            if (SeekHeader(buffer, CommonStrings.HeaderContentLength.Span, out _, out _))
+            if (buffer.IndexOf(CommonStrings.HeaderContentLength.Span) != -1)
             {
                 return ResponseType.ContentLength;
             }
 
-            if (SeekHeader(buffer, CommonStrings.HeaderTransferEncoding.Span, out _, out _))
+            if (buffer.IndexOf(CommonStrings.HeaderTransferEncoding.Span) != -1)
             {
                 return ResponseType.Chunked;
             }

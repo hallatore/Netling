@@ -1,17 +1,16 @@
 ﻿using System;
 using System.IO;
-using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 
 namespace Netling.Core.SocketWorker.Performance
 {
     public class HttpWorkerClient : IHttpWorkerClient
     {
         private TcpClient _client;
+        private Stream _stream;
         private readonly Uri _uri;
 
         public HttpWorkerClient(Uri uri)
@@ -20,7 +19,6 @@ namespace Netling.Core.SocketWorker.Performance
             CheckInit();
         }
 
-        public Stream Stream { get; private set; }
 
         private void CheckInit()
         {
@@ -42,7 +40,7 @@ namespace Netling.Core.SocketWorker.Performance
             _client.SendTimeout = 10000;
             _client.ReceiveTimeout = 10000;
             _client.Connect(_uri.Host, _uri.Port);
-            Stream = GetStream(_uri);
+            _stream = GetStream(_uri);
         }
 
         private Stream GetStream(Uri uri)
@@ -59,13 +57,12 @@ namespace Netling.Core.SocketWorker.Performance
         public void Write(ReadOnlySpan<byte> buffer)
         {
             CheckInit();
-            Stream.Write(buffer);
-            Stream.Flush();
+            _stream.Write(buffer);
         }
 
         public int Read(Memory<byte> buffer)
         {
-            return Stream.Read(buffer.Span);
+            return _stream.Read(buffer.Span);
         }
 
         public void Dispose()

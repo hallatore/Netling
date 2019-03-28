@@ -11,13 +11,11 @@ namespace Netling.Core.SocketWorker.Performance
         private readonly IHttpWorkerClient _client;
         private readonly ReadOnlyMemory<byte> _request;
         private readonly Memory<byte> _buffer;
-        private ResponseType _responseType;
 
         public HttpWorker(IHttpWorkerClient client, Uri uri, HttpMethod httpMethod = HttpMethod.Get, Dictionary<string, string> headers = null, byte[] data = null)
         {
             _client = client;
             _buffer = new Memory<byte>(new byte[8192]);
-            _responseType = ResponseType.Unknown;
             var headersString = string.Empty;
             var contentLength = data?.Length ?? 0;
 
@@ -51,9 +49,9 @@ namespace Netling.Core.SocketWorker.Performance
             var length = read;
             var responseSpan = _buffer.Span.Slice(0, read);
             var statusCode = HttpHelper.GetStatusCode(responseSpan);
-            _responseType = HttpHelper.GetResponseType(responseSpan);
+            var responseType = HttpHelper.GetResponseType(responseSpan);
 
-            if (_responseType == ResponseType.ContentLength)
+            if (responseType == ResponseType.ContentLength)
             {
                 var responseLength = HttpHelperContentLength.GetResponseLength(responseSpan);
 
@@ -65,7 +63,7 @@ namespace Netling.Core.SocketWorker.Performance
                 return (length, statusCode);
             }
             
-            if (_responseType == ResponseType.Chunked)
+            if (responseType == ResponseType.Chunked)
             {
                 while (!HttpHelperChunked.IsEndOfChunkedStream(_buffer.Span.Slice(0, read)))
                 {
