@@ -81,7 +81,7 @@ namespace Netling.Core
             }
             catch (Exception)
             {
-                workerThreadResult.AddError((int)sw.ElapsedMilliseconds, 0, false);
+                workerThreadResult.AddError((int)sw.ElapsedMilliseconds / 1000, 0, false);
                 results.Enqueue(workerThreadResult);
                 resetEvent.Set();
                 return;
@@ -95,7 +95,7 @@ namespace Netling.Core
                 }
                 catch (Exception)
                 {
-                    workerThreadResult.AddError((int)sw.ElapsedMilliseconds, 0, false);
+                    workerThreadResult.AddError((int)sw.ElapsedMilliseconds / 1000, 0, false);
                 }
             }
             

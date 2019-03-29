@@ -35,7 +35,7 @@ namespace Netling.Core.Models
         public void Process(CombinedWorkerThreadResult wtResult)
         {
             Seconds = wtResult.Seconds;
-            var items = wtResult.Seconds.Select(r => r.Value).DefaultIfEmpty(new Second(0)).ToList();
+            var items = wtResult.Seconds.Select(r => r.Value).DefaultIfEmpty(new Second()).ToList();
             Count = items.Sum(s => s.Count);
             Errors = items.Sum(s => s.Errors);
             RequestsPerSecond = Count / (Elapsed.TotalMilliseconds / 1000);

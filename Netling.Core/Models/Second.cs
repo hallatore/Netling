@@ -7,12 +7,10 @@ namespace Netling.Core.Models
         public long Count { get; set; }
         public long Bytes { get; private set; }
         public long Errors { get; private set; }
-        public int Elapsed { get; }
         public List<float> ResponseTimes { get; private set; }
 
-        public Second(int elapsed)
+        public Second()
         {
-            Elapsed = elapsed;
             ResponseTimes = new List<float>();
         }
 

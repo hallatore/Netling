@@ -11,23 +11,23 @@ namespace Netling.Core.Models
             Seconds = new Dictionary<int, Second>();
         }
 
-        public void Add(int elapsed, long bytes, float responsetime, bool trackResponseTime)
+        public void Add(int elapsedSeconds, long bytes, float responsetime, bool trackResponseTime)
         {
-            GetItem(elapsed).Add(bytes, responsetime, trackResponseTime);
+            GetItem(elapsedSeconds).Add(bytes, responsetime, trackResponseTime);
         }
 
-        public void AddError(int elapsed, float responsetime, bool trackResponseTime)
+        public void AddError(int elapsedSeconds, float responsetime, bool trackResponseTime)
         {
-            GetItem(elapsed).AddError(responsetime, trackResponseTime);
+            GetItem(elapsedSeconds).AddError(responsetime, trackResponseTime);
         }
 
-        private Second GetItem(int elapsed)
+        private Second GetItem(int elapsedSeconds)
         {
-            if (Seconds.ContainsKey(elapsed))
-                return Seconds[elapsed];
+            if (Seconds.ContainsKey(elapsedSeconds))
+                return Seconds[elapsedSeconds];
 
-            var second = new Second(elapsed);
-            Seconds.Add(elapsed, second);
+            var second = new Second();
+            Seconds.Add(elapsedSeconds, second);
             return second;
         }
     }
