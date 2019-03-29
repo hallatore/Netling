@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media;
 using Netling.Core.Models;
 using OxyPlot;
 
@@ -43,6 +41,28 @@ namespace Netling.Client
             MaxValueUserControl.Value = string.Format(_resultWindowItem.Max > 5 ? "{0:#,0}" : "{0:0.000}", _resultWindowItem.Max);
             MinTextBlock.Text = MinValueUserControl.Value + " ms";
             MaxTextBlock.Text = MaxValueUserControl.Value + " ms";
+
+            if (workerResult.StatusCodes.Any(s => s.Key != 200))
+            {
+                StatusCodesTab.Visibility = Visibility.Visible;
+                StatusCodesListBox.ItemsSource = workerResult.StatusCodes
+                    .Select(s => new 
+                    {
+                        Name = $"{s.Key} - {(s.Key > 0 ? ((System.Net.HttpStatusCode)s.Key).ToString() : "")}",
+                        Count = s.Value
+                    })
+                    .ToList();
+
+                if (!workerResult.Exceptions.Any())
+                    StatusCodesTab.Focus();
+            }
+
+            if (workerResult.Exceptions.Any())
+            {
+                ExceptionsTab.Visibility = Visibility.Visible;
+                ExceptionsTextBox.Text = string.Join("\r\n\r\n----\r\n\r\n", workerResult.Exceptions.Select(e => e.ToString()));
+                ExceptionsTab.Focus();
+            }
 
             if (_sender.ResultWindowItem != null)
                 LoadBaseline(_sender.ResultWindowItem);

@@ -79,9 +79,9 @@ namespace Netling.Core
             {
                 job = await _workerJob.Init(workerIndex, workerThreadResult);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                workerThreadResult.AddError((int)sw.ElapsedMilliseconds / 1000, 0, false);
+                workerThreadResult.AddError((int)sw.ElapsedMilliseconds / 1000, 0, 0, false, ex);
                 results.Enqueue(workerThreadResult);
                 resetEvent.Set();
                 return;
@@ -93,9 +93,9 @@ namespace Netling.Core
                 {
                     await job.DoWork();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    workerThreadResult.AddError((int)sw.ElapsedMilliseconds / 1000, 0, false);
+                    workerThreadResult.AddError((int)sw.ElapsedMilliseconds / 1000, 0, 0, false, ex);
                 }
             }
             

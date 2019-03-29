@@ -43,11 +43,12 @@ namespace Netling.Core.HttpClientWorker
                 var contentStream = await response.Content.ReadAsStreamAsync();
                 var length = contentStream.Length + response.Headers.ToString().Length + MissingHeaderLength;
                 var responseTime = (float)_localStopwatch.ElapsedTicks / Stopwatch.Frequency * 1000;
+                var statusCode = (int)response.StatusCode;
 
-                if ((int)response.StatusCode < 400)
-                    _workerThreadResult.Add((int)_stopwatch.ElapsedMilliseconds / 1000, length, responseTime, _index < 10);
+                if (statusCode < 400)
+                    _workerThreadResult.Add((int)_stopwatch.ElapsedMilliseconds / 1000, length, responseTime, statusCode, _index < 10);
                 else
-                    _workerThreadResult.AddError((int)_stopwatch.ElapsedMilliseconds / 1000, responseTime, _index < 10);
+                    _workerThreadResult.AddError((int)_stopwatch.ElapsedMilliseconds / 1000, responseTime, statusCode, _index < 10);
             }
         }
 

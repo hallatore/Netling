@@ -43,7 +43,7 @@ namespace Netling.Core.SocketWorker.Performance
             if (read == 0)
             {
                 _client.Reset();
-                throw new EmptyResultException();
+                throw new SocketReturnedEmptyResultException();
             }
 
             var length = read;

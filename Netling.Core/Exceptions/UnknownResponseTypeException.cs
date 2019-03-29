@@ -5,7 +5,7 @@ namespace Netling.Core.Exceptions
     public class UnknownResponseTypeException : Exception
     {
     }
-    public class EmptyResultException : Exception
+    public class SocketReturnedEmptyResultException : Exception
     {
     }
 }

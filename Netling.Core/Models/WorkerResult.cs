@@ -22,7 +22,9 @@ namespace Netling.Core.Models
         public long Errors { get; private set; }
         public double RequestsPerSecond { get; private set; }
         public double BytesPrSecond { get; private set; }        
-        public Dictionary<int, Second> Seconds { get; set; }
+        public Dictionary<int, Second> Seconds { get; private set; }
+        public Dictionary<int, int> StatusCodes { get; private set; }
+        public List<Exception> Exceptions { get; private set; }
 
         public double Median { get; private set; }
         public double StdDev { get; private set; }
@@ -35,6 +37,8 @@ namespace Netling.Core.Models
         public void Process(CombinedWorkerThreadResult wtResult)
         {
             Seconds = wtResult.Seconds;
+            StatusCodes = wtResult.StatusCodes;
+            Exceptions = wtResult.Exceptions.Values.ToList();
             var items = wtResult.Seconds.Select(r => r.Value).DefaultIfEmpty(new Second()).ToList();
             Count = items.Sum(s => s.Count);
             Errors = items.Sum(s => s.Errors);

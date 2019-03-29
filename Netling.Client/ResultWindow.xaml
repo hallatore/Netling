@@ -47,6 +47,25 @@
             <TabItem Header="REQUEST THROUGHPUT" FontSize="11">
                 <client:LineGraphControl Margin="-9,0,0,0" x:Name="RequestsPerSecondGraph"/>
             </TabItem>
+            <TabItem Header="STATUS CODES" FontSize="11" x:Name="StatusCodesTab" Visibility="Collapsed">
+                <ListBox BorderThickness="0" Padding="5" x:Name="StatusCodesListBox" IsEnabled="False">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100" />
+                                    <ColumnDefinition Width="100" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock FontSize="16" Foreground="Black" Grid.Column="0" FontWeight="SemiBold" Text="{Binding Name}" />
+                                <TextBlock FontSize="16" Foreground="Black" Grid.Column="1" Text="{Binding Count}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </TabItem>
+            <TabItem Header="EXCEPTIONS" FontSize="11" x:Name="ExceptionsTab" Visibility="Collapsed">
+                <TextBox IsReadOnly="True" BorderThickness="0" Padding="5" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" x:Name="ExceptionsTextBox"/>
+            </TabItem>
         </TabControl>
     </Grid>
 </Window>
