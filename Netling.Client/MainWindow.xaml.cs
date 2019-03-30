@@ -18,11 +18,13 @@ namespace Netling.Client
         private bool _running;
         private CancellationTokenSource _cancellationTokenSource;
         private Task<WorkerResult> _task;
+        private List<ResultWindow> _resultWindows;
+        private ResultWindowItem _baselineResult;
 
-        public ResultWindowItem ResultWindowItem { get; set; }
 
         public MainWindow()
         {
+            _resultWindows = new List<ResultWindow>();
             InitializeComponent();
             Thread.CurrentThread.CurrentUICulture = new CultureInfo("en");
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en");
@@ -197,12 +199,36 @@ namespace Netling.Client
             _cancellationTokenSource = null;
 
             var result = new ResultWindow(this);
-            await result.Load(_task.Result);
-            _task = null;
+            result.Closing += ResultWindowClosing;
+            _resultWindows.Add(result);
+            await result.Load(_task.Result, _baselineResult);
             result.Show();
+            _task = null;
             StatusProgressbar.Visibility = Visibility.Hidden;
             StartButton.IsEnabled = true;
             StartButton.Content = "Run";
+        }
+
+        private void ResultWindowClosing(object sender, EventArgs e)
+        {
+            _resultWindows.Remove((ResultWindow)sender);
+        }
+
+        public void SetBaseline(ResultWindowItem baselineResult)
+        {
+            _baselineResult = baselineResult;
+
+            foreach (var resultWindow in _resultWindows)
+            {
+                if (baselineResult != null)
+                {
+                    resultWindow.LoadBaseline(baselineResult);
+                }
+                else
+                {
+                    resultWindow.ClearBaseline();
+                }
+            }
         }
     }
 }

@@ -19,7 +19,7 @@ namespace Netling.Client
             InitializeComponent();
         }
 
-        public async Task Load(WorkerResult workerResult)
+        public async Task Load(WorkerResult workerResult, ResultWindowItem baselineResult)
         {
             var taskResult = await GenerateAsync(workerResult);
             _resultWindowItem = taskResult.ResultWindowItem;
@@ -66,9 +66,9 @@ namespace Netling.Client
                 ExceptionsTab.Focus();
             }
 
-            if (_sender.ResultWindowItem != null)
+            if (baselineResult != null)
             {
-                LoadBaseline(_sender.ResultWindowItem);
+                LoadBaseline(baselineResult);
             }
         }
 
@@ -94,13 +94,16 @@ namespace Netling.Client
 
         private void UseBaseline(object sender, RoutedEventArgs e)
         {
-            _sender.ResultWindowItem = _resultWindowItem;
-            LoadBaseline(_sender.ResultWindowItem);
+            _sender.SetBaseline(_resultWindowItem);
         }
 
         private void ClearBaseline(object sender, RoutedEventArgs e)
         {
-            _sender.ResultWindowItem = null;
+            _sender.SetBaseline(null);
+        }
+
+        public void ClearBaseline()
+        {
             ThreadsValueUserControl.BaselineValue = null;
 
             RequestsValueUserControl.BaselineValue = null;
@@ -128,7 +131,7 @@ namespace Netling.Client
             MaxValueUserControl.BaseLine = BaseLine.Equal;
         }
 
-        private void LoadBaseline(ResultWindowItem baseline)
+        public void LoadBaseline(ResultWindowItem baseline)
         {
             ThreadsValueUserControl.BaselineValue = baseline.Threads.ToString();
 
