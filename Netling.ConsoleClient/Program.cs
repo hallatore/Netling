@@ -33,13 +33,21 @@ namespace Netling.ConsoleClient
             Uri uri = null;
 
             if (url != null && !Uri.TryCreate(url, UriKind.Absolute, out uri))
+            {
                 Console.WriteLine("Failed to parse URL");
+            }
             else if (url != null && count.HasValue)
+            {
                 RunWithCount(uri, count.Value).Wait();
+            }
             else if (url != null)
+            {
                 RunWithDuration(uri, threads, TimeSpan.FromSeconds(duration)).Wait();
+            }
             else
+            {
                 ShowHelp();
+            }
         }
 
         private static void ShowHelp()
@@ -65,9 +73,13 @@ namespace Netling.ConsoleClient
             var worker = new Worker(new SocketWorkerJob(uri));
 
             if (count.HasValue)
+            {
                 result = await worker.Run(count.Value, new CancellationToken());
+            }
             else
+            {
                 result = await worker.Run(threads, duration, new CancellationToken());
+            }
 
             Console.WriteLine(ResultString, 
                 result.Count,
@@ -85,7 +97,9 @@ namespace Netling.ConsoleClient
         private static string GetAsciiHistogram(WorkerResult workerResult)
         {
             if (workerResult.Histogram.Length == 0)
+            {
                 return string.Empty;
+            }
 
             const string filled = "█";
             const string empty = " ";

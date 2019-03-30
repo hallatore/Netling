@@ -47,7 +47,9 @@ namespace Netling.Core.Models
 
             var responseTimes = GetResponseTimes(wtResult.ResponseTimes);
             if (!responseTimes.Any())
+            {
                 return;
+            }
 
             Median = responseTimes.GetMedian();
             StdDev = responseTimes.GetStdDev();
@@ -79,7 +81,9 @@ namespace Netling.Core.Models
             var result = new int[splits];
 
             if (responeTimes == null || responeTimes.Length < 2)
+            {
                 return result;
+            }
 
             var max = responeTimes.Last();
             var min = responeTimes.First();
@@ -93,7 +97,9 @@ namespace Netling.Core.Models
                 var stepMax = step + divider;
 
                 if (i + 1 == splits)
+                {
                     stepMax = float.MaxValue;
+                }
 
                 while (y < responeTimes.Length && responeTimes[y] < stepMax)
                 {

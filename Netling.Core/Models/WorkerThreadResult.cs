@@ -36,10 +36,14 @@ namespace Netling.Core.Models
         private void AddOrUpdateStatusCode(int statusCode)
         {
             if (statusCode == 0)
+            {
                 return;
+            }
 
             if (!StatusCodes.ContainsKey(statusCode))
+            {
                 StatusCodes.Add(statusCode, 0);
+            }
 
             StatusCodes[statusCode]++;
         }
@@ -47,7 +51,9 @@ namespace Netling.Core.Models
         private Second GetItem(int elapsedSeconds)
         {
             if (Seconds.ContainsKey(elapsedSeconds))
+            {
                 return Seconds[elapsedSeconds];
+            }
 
             var second = new Second();
             Seconds.Add(elapsedSeconds, second);

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace Netling.Core.Models
@@ -26,7 +25,9 @@ namespace Netling.Core.Models
             Bytes += bytes;
 
             if (trackResponseTime)
+            {
                 ResponseTimes.Add(responseTime);
+            }
         }
 
         public void AddError(float responseTime, bool trackResponseTime)
@@ -35,7 +36,9 @@ namespace Netling.Core.Models
             Errors++;
 
             if (trackResponseTime)
+            {
                 ResponseTimes.Add(responseTime);
+            }
         }
 
         public void AddMerged(Second second)

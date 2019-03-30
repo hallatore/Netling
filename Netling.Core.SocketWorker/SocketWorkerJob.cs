@@ -24,8 +24,7 @@ namespace Netling.Core.SocketWorker
         {
             _index = index;
             _uri = uri;
-            _stopwatch = new Stopwatch();
-            _stopwatch.Start();
+            _stopwatch = Stopwatch.StartNew();
             _localStopwatch = new Stopwatch();
             _workerThreadResult = workerThreadResult;
             _httpWorker = new HttpWorker(new HttpWorkerClient(uri), uri);
@@ -37,9 +36,13 @@ namespace Netling.Core.SocketWorker
             var (length, statusCode) = _httpWorker.Send();
 
             if (statusCode < 400)
-                _workerThreadResult.Add((int)_stopwatch.ElapsedMilliseconds / 1000, length, (float) _localStopwatch.ElapsedTicks / Stopwatch.Frequency * 1000, statusCode, _index < 10);
+            {
+                _workerThreadResult.Add((int)_stopwatch.ElapsedMilliseconds / 1000, length, (float)_localStopwatch.ElapsedTicks / Stopwatch.Frequency * 1000, statusCode, _index < 10);
+            }
             else
-                _workerThreadResult.AddError((int)_stopwatch.ElapsedMilliseconds / 1000, (float) _localStopwatch.ElapsedTicks / Stopwatch.Frequency * 1000, statusCode, _index < 10);
+            {
+                _workerThreadResult.AddError((int)_stopwatch.ElapsedMilliseconds / 1000, (float)_localStopwatch.ElapsedTicks / Stopwatch.Frequency * 1000, statusCode, _index < 10);
+            }
 
             return new ValueTask();
         }

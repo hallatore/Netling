@@ -23,7 +23,9 @@ namespace Netling.Core.SocketWorker.Performance
         private void CheckInit()
         {
             if (_client?.Connected == true)
+            {
                 return;
+            }
 
             _client?.Close();
             _client = new TcpClient();
@@ -46,8 +48,10 @@ namespace Netling.Core.SocketWorker.Performance
         private Stream GetStream(Uri uri)
         {
             if (uri.Scheme == Uri.UriSchemeHttp)
+            {
                 return _client.GetStream();
-            
+            }
+
             var stream = new SslStream(_client.GetStream());
             var xc = new X509Certificate2Collection();
             stream.AuthenticateAsClient(uri.Host, xc, SslProtocols.Tls12, false);

@@ -54,7 +54,9 @@ namespace Netling.Client
                     .ToList();
 
                 if (!workerResult.Exceptions.Any())
+                {
                     StatusCodesTab.Focus();
+                }
             }
 
             if (workerResult.Exceptions.Any())
@@ -65,7 +67,9 @@ namespace Netling.Client
             }
 
             if (_sender.ResultWindowItem != null)
+            {
                 LoadBaseline(_sender.ResultWindowItem);
+            }
         }
 
         private Task<JobTaskResult> GenerateAsync(WorkerResult workerResult)
@@ -155,7 +159,9 @@ namespace Netling.Client
         private BaseLine GetBaseline(double v1, double v2)
         {
             if (Math.Abs(v1 - v2) < 0.001)
+            {
                 return BaseLine.Equal;
+            }
 
             return v1 > v2 ? BaseLine.Better : BaseLine.Worse;
         }

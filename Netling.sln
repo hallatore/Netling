@@ -15,7 +15,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netling.Core.SocketWorker",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netling.Core.HttpClientWorker", "Netling.Core.HttpClientWorker\Netling.Core.HttpClientWorker.csproj", "{1098EAA8-0341-44E9-8FDE-D05A2A56E083}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Netling.Benchmarks", "Netling.Benchmarks\Netling.Benchmarks.csproj", "{0BD3C287-A664-4217-AB15-FA76441A179F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netling.Benchmarks", "Netling.Benchmarks\Netling.Benchmarks.csproj", "{0BD3C287-A664-4217-AB15-FA76441A179F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4BB83124-D84B-457A-9721-C7D85DD2D764}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

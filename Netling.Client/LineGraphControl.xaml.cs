@@ -50,7 +50,9 @@ namespace Netling.Client
             };
 
             if (trackerFormatString != null)
+            {
                 ls.TrackerFormatString = trackerFormatString;
+            }
 
             foreach (var point in points)
             {

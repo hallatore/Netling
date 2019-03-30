@@ -27,8 +27,7 @@ namespace Netling.Core.HttpClientWorker
         {
             _index = index;
             _uri = uri;
-            _stopwatch = new Stopwatch();
-            _stopwatch.Start();
+            _stopwatch = Stopwatch.StartNew();
             _localStopwatch = new Stopwatch();
             _workerThreadResult = workerThreadResult;
             _httpClient = new HttpClient();
@@ -46,9 +45,13 @@ namespace Netling.Core.HttpClientWorker
                 var statusCode = (int)response.StatusCode;
 
                 if (statusCode < 400)
+                {
                     _workerThreadResult.Add((int)_stopwatch.ElapsedMilliseconds / 1000, length, responseTime, statusCode, _index < 10);
+                }
                 else
+                {
                     _workerThreadResult.AddError((int)_stopwatch.ElapsedMilliseconds / 1000, responseTime, statusCode, _index < 10);
+                }
             }
         }
 

@@ -8,7 +8,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Netling.Core;
-using Netling.Core.HttpClientWorker;
 using Netling.Core.Models;
 using Netling.Core.SocketWorker;
 
@@ -105,11 +104,15 @@ namespace Netling.Client
                 }
 
                 if (string.IsNullOrWhiteSpace(Url.Text))
+                {
                     return;
+                }
 
                 if (!Uri.TryCreate(Url.Text.Trim(), UriKind.Absolute, out var uri))
+                {
                     return;
-                
+                }
+
                 Threads.IsEnabled = false;
                 Duration.IsEnabled = false;
                 Url.IsEnabled = false;
@@ -125,9 +128,13 @@ namespace Netling.Client
                 var worker = new Worker(new SocketWorkerJob(uri));
 
                 if (count.HasValue)
+                {
                     _task = worker.Run(count.Value, cancellationToken);
+                }
                 else
+                {
                     _task = worker.Run(threads, duration, cancellationToken);
+                }
 
                 _task.GetAwaiter().OnCompleted(async () =>
                 {
@@ -135,19 +142,22 @@ namespace Netling.Client
                 });
 
                 if (StatusProgressbar.IsIndeterminate)
+                {
                     return;
+                }
 
-                var sw = new Stopwatch();
-                sw.Start();
+                var sw = Stopwatch.StartNew();
 
                 while (!cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.Elapsed.TotalMilliseconds)
                 {
-                    await Task.Delay(10);
+                    await Task.Delay(500);
                     StatusProgressbar.Value = 100.0 / duration.TotalMilliseconds * sw.Elapsed.TotalMilliseconds;
                 }
 
                 if (!_running)
+                {
                     return;
+                }
 
                 StatusProgressbar.IsIndeterminate = true;
                 StartButton.IsEnabled = false;
@@ -155,14 +165,18 @@ namespace Netling.Client
             else
             {
                 if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
+                {
                     _cancellationTokenSource.Cancel();
+                }
             }
         }
 
         private void Urls_OnKeyUp(object sender, KeyEventArgs e)
         {
             if (e.Key != Key.Return)
+            {
                 return;
+            }
 
             StartButton_Click(sender, null);
             StartButton.Focus();
@@ -171,7 +185,9 @@ namespace Netling.Client
         private async Task JobCompleted()
         {
             if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
+            {
                 _cancellationTokenSource.Cancel();
+            }
 
             _running = false;
             Threads.IsEnabled = true;

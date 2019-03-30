@@ -10,10 +10,14 @@ namespace Netling.Core.Extensions
             var count = source.Length;
 
             if (count == 0)
+            {
                 return 0;
+            }
 
             if (count % 2 != 0)
+            {
                 return source[count / 2];
+            }
 
             var a = source[count / 2 - 1];
             var b = source[count / 2];
@@ -23,7 +27,9 @@ namespace Netling.Core.Extensions
         public static double GetStdDev(this float[] source)
         {
             if (source.Length <= 0)
+            {
                 return 0;
+            }
 
             var avg = source.Average();
             var sum = source.Sum(d => Math.Pow(d - avg, 2));

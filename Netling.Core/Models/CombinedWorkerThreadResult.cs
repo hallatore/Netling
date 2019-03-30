@@ -25,7 +25,9 @@ namespace Netling.Core.Models
                 foreach (var statusCode in result.StatusCodes)
                 {
                     if (!StatusCodes.ContainsKey(statusCode.Key))
+                    {
                         StatusCodes.Add(statusCode.Key, 0);
+                    }
 
                     StatusCodes[statusCode.Key] += statusCode.Value;
                 }
@@ -33,7 +35,9 @@ namespace Netling.Core.Models
                 foreach (var exception in result.Exceptions)
                 {
                     if (!Exceptions.ContainsKey(exception.Key))
+                    {
                         Exceptions.Add(exception.Key, exception.Value);
+                    }
                 }
 
                 foreach (var second in result.Seconds)
@@ -42,9 +46,13 @@ namespace Netling.Core.Models
                     second.Value.ClearResponseTimes();
                     
                     if (Seconds.ContainsKey(second.Key))
+                    {
                         Seconds[second.Key].AddMerged(second.Value);
+                    }
                     else
+                    {
                         Seconds.Add(second.Key, second.Value);
+                    }
                 }
             }
         }

@@ -43,8 +43,7 @@ namespace Netling.Core
         {
             var results = new ConcurrentQueue<WorkerThreadResult>();
             var events = new List<ManualResetEventSlim>();
-            var sw = new Stopwatch();
-            sw.Start();
+            var sw = Stopwatch.StartNew();
 
             for (var i = 0; i < threads; i++)
             {
@@ -53,10 +52,14 @@ namespace Netling.Core
                 Thread thread;
 
                 if (count.HasValue)
+                {
                     thread = new Thread(async (index) => await DoWork_Count(count.Value, results, cancellationToken, resetEvent, (int)index));
+                }
                 else
+                {
                     thread = new Thread(async (index) => await DoWork_Duration(duration, sw, results, cancellationToken, resetEvent, (int)index));
-                
+                }
+
                 thread.Start(i);
                 events.Add(resetEvent);
             }
