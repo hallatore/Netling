@@ -2,7 +2,7 @@
 
 namespace Netling.Core.Exceptions
 {
-    public class UnknownResponseTypeException : Exception
+    public class ConnectionClosedException : Exception
     {
     }
 }
