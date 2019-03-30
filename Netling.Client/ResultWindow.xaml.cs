@@ -28,7 +28,7 @@ namespace Netling.Client
             var dataPoints = workerResult.Histogram.Select((count, i) => new DataPoint(i / 80.0 * (_resultWindowItem.Max - _resultWindowItem.Min) + _resultWindowItem.Min, count)).ToList();
             HistogramGraph.Draw(dataPoints, "{X:0.000} ms");
 
-            Title = "Netling - " + _resultWindowItem.Url;
+            Title = "Netling - " + _resultWindowItem.Name;
             ThreadsValueUserControl.Value = _resultWindowItem.Threads.ToString();
 
             RequestsValueUserControl.Value = _resultWindowItem.JobsPerSecond.ToString("#,0");

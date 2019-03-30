@@ -74,11 +74,11 @@ namespace Netling.ConsoleClient
 
             if (count.HasValue)
             {
-                result = await worker.Run(count.Value, new CancellationToken());
+                result = await worker.Run(uri.ToString(), count.Value, new CancellationToken());
             }
             else
             {
-                result = await worker.Run(threads, duration, new CancellationToken());
+                result = await worker.Run(uri.ToString(), threads, duration, new CancellationToken());
             }
 
             Console.WriteLine(ResultString, 

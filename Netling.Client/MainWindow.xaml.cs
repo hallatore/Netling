@@ -131,11 +131,11 @@ namespace Netling.Client
 
                 if (count.HasValue)
                 {
-                    _task = worker.Run(count.Value, cancellationToken);
+                    _task = worker.Run(uri.ToString(), count.Value, cancellationToken);
                 }
                 else
                 {
-                    _task = worker.Run(threads, duration, cancellationToken);
+                    _task = worker.Run(uri.ToString(), threads, duration, cancellationToken);
                 }
 
                 _task.GetAwaiter().OnCompleted(async () =>

@@ -18,22 +18,22 @@ namespace Netling.Core
             _workerJob = workerJob;
         }
 
-        public Task<WorkerResult> Run(int threads, TimeSpan duration, CancellationToken cancellationToken)
+        public Task<WorkerResult> Run(string name, int threads, TimeSpan duration, CancellationToken cancellationToken)
         {
-            return Run(threads, duration, null, cancellationToken);
+            return Run(name, threads, duration, null, cancellationToken);
         }
 
-        public Task<WorkerResult> Run(int count, CancellationToken cancellationToken)
+        public Task<WorkerResult> Run(string name, int count, CancellationToken cancellationToken)
         {
-            return Run(1, TimeSpan.MaxValue, count, cancellationToken);
+            return Run(name, 1, TimeSpan.MaxValue, count, cancellationToken);
         }
 
-        private Task<WorkerResult> Run(int threads, TimeSpan duration, int? count, CancellationToken cancellationToken)
+        private Task<WorkerResult> Run(string name, int threads, TimeSpan duration, int? count, CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {
                 var combinedWorkerThreadResult = QueueWorkerThreads(threads, duration, count, cancellationToken);
-                var workerResult = new WorkerResult(threads, combinedWorkerThreadResult.Elapsed);
+                var workerResult = new WorkerResult(name, threads, combinedWorkerThreadResult.Elapsed);
                 workerResult.Process(combinedWorkerThreadResult);
                 return workerResult;
             });

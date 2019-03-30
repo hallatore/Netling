@@ -7,14 +7,16 @@ namespace Netling.Core.Models
 {
     public class WorkerResult
     {
-        public WorkerResult(int threads, TimeSpan elapsed)
+        public WorkerResult(string name, int threads, TimeSpan elapsed)
         {
+            Name = name;
             Threads = threads;
             Elapsed = elapsed;
             Seconds = new Dictionary<int, Second>();
             Histogram = new int[0];
         }
 
+        public string Name { get; }
         public int Threads { get; }
         public TimeSpan Elapsed { get; }
 
