@@ -8,8 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OxyPlot" Version="2014.1.546.0" />
-    <PackageReference Include="OxyPlot.Wpf" Version="2014.1.546.0" />
+    <PackageReference Include="OxyPlot.Wpf" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
