@@ -9,8 +9,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netling.Tests", "Netling.Te
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4BB83124-D84B-457A-9721-C7D85DD2D764}"
 	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		LICENSE.md = LICENSE.md
+		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Netling", "Netling\Netling.csproj", "{A135D211-91F5-4225-8DDB-29116E773CB2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,6 +31,10 @@ Global
 		{3EAFC61A-8664-4D9F-82F2-323DB8EA0F06}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EAFC61A-8664-4D9F-82F2-323DB8EA0F06}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3EAFC61A-8664-4D9F-82F2-323DB8EA0F06}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A135D211-91F5-4225-8DDB-29116E773CB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A135D211-91F5-4225-8DDB-29116E773CB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A135D211-91F5-4225-8DDB-29116E773CB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A135D211-91F5-4225-8DDB-29116E773CB2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

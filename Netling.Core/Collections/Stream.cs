@@ -2,29 +2,38 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
+using System.Threading;
 
 namespace Netling.Core.Collections
 {
-    public class RepeatEnumerable<T> : IEnumerable<T>
+    public class Stream<T> : IEnumerable<T>, IReadOnlyCollection<T>
     {
         private readonly IEnumerable<T> _inner;
 
-        public RepeatEnumerable()
+        public int Count => _inner.Count();
+
+        public IEnumerable<T> Once()
+        {
+            return _inner;
+        }
+
+        public Stream()
         {
             _inner = new T[] { };
         }
 
-        public RepeatEnumerable(T one)
+        public Stream(T one)
         {
             _inner = new T[] { one };
         }
 
-        public RepeatEnumerable(params T[] many)
+        public Stream(params T[] many)
         {
             _inner = many;
         }
 
-        public RepeatEnumerable(IEnumerable<T> many)
+        public Stream(IEnumerable<T> many)
         {
             _inner = many;
         }

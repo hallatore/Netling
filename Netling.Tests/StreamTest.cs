@@ -9,12 +9,12 @@ using NUnit.Framework;
 namespace Netling.Tests
 {
     [TestFixture]
-    public class RepeatEnumerableTest
+    public class StreamTest
     {
         [Test]
         public void RepeatEnumerable_Handles_Empty()
         {
-            var re = new RepeatEnumerable<int>();
+            var re = new Stream<int>();
 
             foreach (var r in re)
             {
@@ -25,7 +25,7 @@ namespace Netling.Tests
         [Test]
         public void RepeatEnumerable_Handles_One()
         {
-            var re = new RepeatEnumerable<int>(1);
+            var re = new Stream<int>(1);
 
             var results = new List<int>();
             var count = 0;
@@ -46,7 +46,7 @@ namespace Netling.Tests
         [Test]
         public void RepeatEnumerable_Handles_Many()
         {
-            var re = new RepeatEnumerable<int>(1, 2, 3);
+            var re = new Stream<int>(1, 2, 3);
 
             var results = new List<int>();
             var count = 0;
