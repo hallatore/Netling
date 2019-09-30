@@ -5,22 +5,17 @@ VisualStudioVersion = 16.0.28714.193
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netling.Core", "Netling.Core\Netling.Core.csproj", "{84CEEC3F-5FCF-4CA5-A6D7-F83CF7EA0B52}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netling.Client", "Netling.Client\Netling.Client.csproj", "{4F98A1F2-5AAB-44E9-8DBB-8EE865B97AF3}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netling.ConsoleClient", "Netling.ConsoleClient\Netling.ConsoleClient.csproj", "{170E12EF-4094-4B8B-93D3-4A399F81BE9D}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netling.Tests", "Netling.Tests\Netling.Tests.csproj", "{3EAFC61A-8664-4D9F-82F2-323DB8EA0F06}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netling.Core.SocketWorker", "Netling.Core.SocketWorker\Netling.Core.SocketWorker.csproj", "{10E2F65D-8993-409A-ABE5-59CC2697CB32}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netling.Core.HttpClientWorker", "Netling.Core.HttpClientWorker\Netling.Core.HttpClientWorker.csproj", "{1098EAA8-0341-44E9-8FDE-D05A2A56E083}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netling.Benchmarks", "Netling.Benchmarks\Netling.Benchmarks.csproj", "{0BD3C287-A664-4217-AB15-FA76441A179F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4BB83124-D84B-457A-9721-C7D85DD2D764}"
 	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		LICENSE.md = LICENSE.md
+		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Netling", "Netling\Netling.csproj", "{A135D211-91F5-4225-8DDB-29116E773CB2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,30 +27,14 @@ Global
 		{84CEEC3F-5FCF-4CA5-A6D7-F83CF7EA0B52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84CEEC3F-5FCF-4CA5-A6D7-F83CF7EA0B52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{84CEEC3F-5FCF-4CA5-A6D7-F83CF7EA0B52}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4F98A1F2-5AAB-44E9-8DBB-8EE865B97AF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4F98A1F2-5AAB-44E9-8DBB-8EE865B97AF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4F98A1F2-5AAB-44E9-8DBB-8EE865B97AF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4F98A1F2-5AAB-44E9-8DBB-8EE865B97AF3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{170E12EF-4094-4B8B-93D3-4A399F81BE9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{170E12EF-4094-4B8B-93D3-4A399F81BE9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{170E12EF-4094-4B8B-93D3-4A399F81BE9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{170E12EF-4094-4B8B-93D3-4A399F81BE9D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3EAFC61A-8664-4D9F-82F2-323DB8EA0F06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3EAFC61A-8664-4D9F-82F2-323DB8EA0F06}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EAFC61A-8664-4D9F-82F2-323DB8EA0F06}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3EAFC61A-8664-4D9F-82F2-323DB8EA0F06}.Release|Any CPU.Build.0 = Release|Any CPU
-		{10E2F65D-8993-409A-ABE5-59CC2697CB32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{10E2F65D-8993-409A-ABE5-59CC2697CB32}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{10E2F65D-8993-409A-ABE5-59CC2697CB32}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{10E2F65D-8993-409A-ABE5-59CC2697CB32}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1098EAA8-0341-44E9-8FDE-D05A2A56E083}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1098EAA8-0341-44E9-8FDE-D05A2A56E083}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1098EAA8-0341-44E9-8FDE-D05A2A56E083}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1098EAA8-0341-44E9-8FDE-D05A2A56E083}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0BD3C287-A664-4217-AB15-FA76441A179F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0BD3C287-A664-4217-AB15-FA76441A179F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0BD3C287-A664-4217-AB15-FA76441A179F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0BD3C287-A664-4217-AB15-FA76441A179F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A135D211-91F5-4225-8DDB-29116E773CB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A135D211-91F5-4225-8DDB-29116E773CB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A135D211-91F5-4225-8DDB-29116E773CB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A135D211-91F5-4225-8DDB-29116E773CB2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
