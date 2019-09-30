@@ -66,4 +66,12 @@ namespace Netling.Core.Collections
             }
         }
     }
+
+    public static class StreamExtension
+    {
+        public static int Count<T>(this Stream<T> s)
+        {
+            return s.Count;
+        }
+    }
 }

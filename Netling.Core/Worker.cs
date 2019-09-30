@@ -144,7 +144,7 @@ namespace Netling.Core
                 var num = 0;
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    if (bc.Count < _uris.Count)
+                    if (bc.Count < _uris.Count())
                     {
                         foreach (var n in _uris.Once())
                         {
