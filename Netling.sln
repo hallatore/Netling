@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.28714.193
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netling.Core", "Netling.Core\Netling.Core.csproj", "{84CEEC3F-5FCF-4CA5-A6D7-F83CF7EA0B52}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netling.Client", "Netling.Client\Netling.Client.csproj", "{4F98A1F2-5AAB-44E9-8DBB-8EE865B97AF3}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netling.ConsoleClient", "Netling.ConsoleClient\Netling.ConsoleClient.csproj", "{170E12EF-4094-4B8B-93D3-4A399F81BE9D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netling.Tests", "Netling.Tests\Netling.Tests.csproj", "{3EAFC61A-8664-4D9F-82F2-323DB8EA0F06}"
@@ -32,10 +30,6 @@ Global
 		{84CEEC3F-5FCF-4CA5-A6D7-F83CF7EA0B52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84CEEC3F-5FCF-4CA5-A6D7-F83CF7EA0B52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{84CEEC3F-5FCF-4CA5-A6D7-F83CF7EA0B52}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4F98A1F2-5AAB-44E9-8DBB-8EE865B97AF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4F98A1F2-5AAB-44E9-8DBB-8EE865B97AF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4F98A1F2-5AAB-44E9-8DBB-8EE865B97AF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4F98A1F2-5AAB-44E9-8DBB-8EE865B97AF3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{170E12EF-4094-4B8B-93D3-4A399F81BE9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{170E12EF-4094-4B8B-93D3-4A399F81BE9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{170E12EF-4094-4B8B-93D3-4A399F81BE9D}.Release|Any CPU.ActiveCfg = Release|Any CPU

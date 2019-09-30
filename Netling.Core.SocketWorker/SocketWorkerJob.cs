@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Netling.Core.Models;
@@ -14,6 +15,22 @@ namespace Netling.Core.SocketWorker
         private readonly Stopwatch _localStopwatch;
         private readonly WorkerThreadResult _workerThreadResult;
         private readonly HttpWorker _httpWorker;
+        private readonly IEnumerable<Uri> _uris;
+
+        public SocketWorkerJob(IEnumerable<Uri> uris)
+        {
+            _uris = uris;
+        }
+
+        //private SocketWorkerJob(int index, IEnumerable<Uri> uris, WorkerThreadResult workerThreadResult)
+        //{
+        //    _index = index;
+        //    _uris = uris;
+        //    _stopwatch = Stopwatch.StartNew();
+        //    _localStopwatch = new Stopwatch();
+        //    _workerThreadResult = workerThreadResult;
+        //    _httpWorker = new HttpWorker(new HttpWorkerClient(uri), uri);
+        //}
 
         public SocketWorkerJob(Uri uri)
         {
@@ -35,7 +52,7 @@ namespace Netling.Core.SocketWorker
             _localStopwatch.Restart();
             var (length, statusCode) = _httpWorker.Send();
 
-            if (statusCode < 400)
+            if (statusCode < 400 || statusCode == 404) // not found is a valid response
             {
                 _workerThreadResult.Add((int)_stopwatch.ElapsedMilliseconds / 1000, length, (float)_localStopwatch.ElapsedTicks / Stopwatch.Frequency * 1000, statusCode, _index < 10);
             }
