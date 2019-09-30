@@ -12,18 +12,20 @@ namespace Netling.Core
     public class Worker
     {
         private readonly IWorkerJob _workerJob;
+        private readonly IEnumerable<Uri> _uris;
 
-        public Worker(IWorkerJob workerJob)
+        public Worker(IWorkerJob workerJob, IEnumerable<Uri> uris)
         {
             _workerJob = workerJob;
+            _uris = uris;
         }
 
-        public Task<WorkerResult> Run(string name, int threads, TimeSpan duration, CancellationToken cancellationToken)
+        public Task<WorkerResult> RunDuration(string name, int threads, TimeSpan duration, CancellationToken cancellationToken)
         {
             return Run(name, threads, duration, null, cancellationToken);
         }
 
-        public Task<WorkerResult> Run(string name, int count, CancellationToken cancellationToken)
+        public Task<WorkerResult> RunCount(string name, int count, CancellationToken cancellationToken)
         {
             return Run(name, 1, TimeSpan.MaxValue, count, cancellationToken);
         }
@@ -113,7 +115,7 @@ namespace Netling.Core
 
             for (var i = 0; i < count && !cancellationToken.IsCancellationRequested; i++)
             {
-                await job.DoWork();
+                await job.DoWork(); // need to pass uri here
             }
 
             results.Enqueue(job.GetResults());

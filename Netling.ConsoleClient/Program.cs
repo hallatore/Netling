@@ -20,12 +20,14 @@ namespace Netling.ConsoleClient
             var threads = 1;
             var duration = 10;
             int? count = null;
+            string fp = null;
 
             var p = new OptionSet()
             {
                 {"t|threads=", (int v) => threads = v},
                 {"d|duration=", (int v) => duration = v},
-                {"c|count=", (int? v) => count = v}
+                {"c|count=", (int? v) => count = v},
+                {"f|file=", (string s) => fp = s }
             };
 
             var extraArgs = p.Parse(args);
