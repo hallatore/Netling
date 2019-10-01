@@ -65,6 +65,16 @@ namespace Netling.Core.Collections
                 }
             }
         }
+
+        public IEnumerable<T> Take(IScaleOptions opts)
+        {
+            return _inner.Take(this.Count(opts));
+        }
+
+        public TimeSpan Frequency(IScaleOptions opts)
+        {
+            return TimeSpan.FromMilliseconds(Count / (opts.Threads * opts.Concurrency));
+        }
     }
 
     public static class StreamExtension
@@ -72,6 +82,11 @@ namespace Netling.Core.Collections
         public static int Count<T>(this Stream<T> s)
         {
             return s.Count;
+        }
+
+        public static int Count<T>(this Stream<T> s, IScaleOptions opts)
+        {
+            return s.Count * opts.Threads * opts.Concurrency;
         }
     }
 }

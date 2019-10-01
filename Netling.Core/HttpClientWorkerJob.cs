@@ -12,7 +12,6 @@ namespace Netling.Core
     {
         private readonly int _index;
         private readonly Stopwatch _stopwatch;
-        private readonly Stopwatch _localStopwatch;
         private readonly WorkerThreadResult _workerThreadResult;
         private readonly HttpClient _httpClient;
 
@@ -27,20 +26,19 @@ namespace Netling.Core
         {
             _index = index;
             _stopwatch = Stopwatch.StartNew();
-            _localStopwatch = new Stopwatch();
             _workerThreadResult = workerThreadResult;
             _httpClient = new HttpClient();
         }
 
-        public async ValueTask DoWork(Uri uri)
+        public async Task DoWork(Uri uri)
         {
-            _localStopwatch.Restart();
+            var localStopwatch = Stopwatch.StartNew();
 
             using (var response = await _httpClient.GetAsync(uri))
             {
                 var contentStream = await response.Content.ReadAsStreamAsync();
                 var length = contentStream.Length + response.Headers.ToString().Length + MissingHeaderLength;
-                var responseTime = (float)_localStopwatch.ElapsedTicks / Stopwatch.Frequency * 1000;
+                var responseTime = (float)localStopwatch.ElapsedTicks / Stopwatch.Frequency * 1000;
                 var statusCode = (int)response.StatusCode;
 
                 if (statusCode < 400 || statusCode == 404) // not found is a valid response

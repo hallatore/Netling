@@ -11,6 +11,8 @@ namespace Netling
     {
         static async Task Main(string[] args)
         {
+            var source = new CancellationTokenSource();
+            AppDomain.CurrentDomain.ProcessExit += (s, o) => source.Cancel();
             var re = new Stream<Uri>(new Uri[]
             {
                 new Uri("https://it-wsdev1.s.uw.edu/identity/v2/person/01CC19E60B7FA3C4BB53A421F12B1C7D/full.json"),
@@ -65,10 +67,23 @@ namespace Netling
                 new Uri("https://it-wsdev1.s.uw.edu/identity/v2/person/C0EC5B5F3DCAFCB76EF5A5429093A17D/full.json"),
             });
             var worker = new Worker(new NothingWorkJob(), re);
-            var source = new CancellationTokenSource();
-            AppDomain.CurrentDomain.ProcessExit += (s, o) => source.Cancel();
 
-            var result = await worker.RunCount("test", source.Token);
+            var opts = new DurationOptions
+            {
+                Threads = 3,
+                Concurrency = 5,
+                Duration = TimeSpan.FromSeconds(10)
+            };
+
+            //var opts = new CountOptions
+            //{
+            //    Threads = 3,
+            //    Concurrency = 5,
+            //    Count = 100
+            //};
+
+            var result = await worker.Run("test", opts, source.Token);
+
         }
     }
 
@@ -78,7 +93,7 @@ namespace Netling
 
         public NothingWorkJob()
         {
-
+            _result = new WorkerThreadResult();
         }
 
         private NothingWorkJob(WorkerThreadResult result)
@@ -86,10 +101,11 @@ namespace Netling
             _result = result;
         }
 
-        public async ValueTask DoWork(Uri uri)
+        public async Task DoWork(Uri uri)
         {
             await Task.Delay(TimeSpan.FromMilliseconds(5)); // simulate network call
             Console.WriteLine(uri.ToString());
+            _result.Add(0, 0, 0, 0, false);
         }
 
         public WorkerThreadResult GetResults()

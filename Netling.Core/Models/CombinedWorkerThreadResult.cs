@@ -42,8 +42,11 @@ namespace Netling.Core.Models
 
                 foreach (var second in result.Seconds)
                 {
-                    ResponseTimes.Add(second.Value.ResponseTimes);
-                    second.Value.ClearResponseTimes();
+                    if (second.Value != null)
+                    {
+                        ResponseTimes.Add(second.Value.ResponseTimes);
+                        second.Value.ClearResponseTimes();
+                    }
                     
                     if (Seconds.ContainsKey(second.Key))
                     {

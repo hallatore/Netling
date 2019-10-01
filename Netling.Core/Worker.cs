@@ -21,34 +21,29 @@ namespace Netling.Core
             _uris = uris;
         }
 
-        public Task<WorkerResult> RunDuration(string name, int threads, TimeSpan duration, CancellationToken cancellationToken)
-        {
-            return RunDurationImpl(name, threads, duration, cancellationToken);
-        }
-
-        private Task<WorkerResult> RunDurationImpl(string name, int threads, TimeSpan duration, CancellationToken cancellationToken)
+        public Task<WorkerResult> Run(string name, DurationOptions opts, CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {
-                var combinedWorkerThreadResult = QueueDurationThreads(threads, duration, cancellationToken);
-                var workerResult = new WorkerResult(name, threads, combinedWorkerThreadResult.Elapsed);
+                var combinedWorkerThreadResult = QueueDurationThreads(opts, cancellationToken);
+                var workerResult = new WorkerResult(name, opts.Threads, combinedWorkerThreadResult.Elapsed);
                 workerResult.Process(combinedWorkerThreadResult);
                 return workerResult;
             });
         }
 
-        private CombinedWorkerThreadResult Sink(ConcurrentQueue<WorkerThreadResult> results, IEnumerable<ManualResetEventSlim> events, Stopwatch sw)
+        public Task<WorkerResult> Run(string name, CountOptions opts, CancellationToken cancellationToken)
         {
-            for (var i = 0; i < events.Count(); i += 50)
+            return Task.Run(() =>
             {
-                var group = events.Skip(i).Take(50).Select(r => r.WaitHandle).ToArray();
-                WaitHandle.WaitAll(group);
-            }
-
-            return new CombinedWorkerThreadResult(results, sw.Elapsed);
+                var combinedWorkerThreadResult = QueueCountThreads(opts, cancellationToken);
+                var workerResult = new WorkerResult(name, opts.Threads, combinedWorkerThreadResult.Elapsed);
+                workerResult.Process(combinedWorkerThreadResult);
+                return workerResult;
+            });
         }
 
-        private CombinedWorkerThreadResult QueueDurationThreads(int threads, TimeSpan duration, CancellationToken cancellationToken)
+        private CombinedWorkerThreadResult QueueDurationThreads(DurationOptions opts, CancellationToken cancellationToken)
         {
             var results = new ConcurrentQueue<WorkerThreadResult>();
             var events = new List<ManualResetEventSlim>();
@@ -58,23 +53,23 @@ namespace Netling.Core
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    if (bc.Count < 5000)
+                    if (bc.Count < _uris.Count(opts))
                     {
-                        var next = _uris.Take(1000);
+                        var next = _uris.Take(opts);
                         foreach (var n in next)
                         {
                             bc.Add(n);
                         }
                     }
-                    await Task.Delay(TimeSpan.FromMilliseconds(100));
+                    await Task.Delay(_uris.Frequency(opts));
                 }
             });
 
-            for (var i = 0; i < threads; i++)
+            for (var i = 0; i < opts.Threads; i++)
             {
                 var resetEvent = new ManualResetEventSlim(false);
 
-                var thread = new Thread(async (index) => await DoWork_Duration(duration, sw, results, cancellationToken, resetEvent, (int)index, bc));
+                var thread = new Thread(async (index) => await DoWork_Duration(opts, sw, results, cancellationToken, resetEvent, (int)index, bc));
 
                 thread.Start(i);
                 events.Add(resetEvent);
@@ -83,10 +78,12 @@ namespace Netling.Core
             return Sink(results, events, sw);
         }
 
-        private async Task DoWork_Duration(TimeSpan duration, Stopwatch sw, ConcurrentQueue<WorkerThreadResult> results, CancellationToken cancellationToken, ManualResetEventSlim resetEvent, int workerIndex, BlockingCollection<Uri> stream)
+        private async Task DoWork_Duration(DurationOptions opts, Stopwatch sw, ConcurrentQueue<WorkerThreadResult> results, CancellationToken cancellationToken, ManualResetEventSlim resetEvent, int workerIndex, BlockingCollection<Uri> stream)
         {
             IWorkerJob job;
             var workerThreadResult = new WorkerThreadResult();
+            var sem = new SemaphoreSlim(opts.Concurrency);
+            var bag = new ConcurrentBag<Task>();
 
             try
             {
@@ -100,12 +97,16 @@ namespace Netling.Core
                 return;
             }
 
-            while (!cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.Elapsed.TotalMilliseconds)
+            while (!cancellationToken.IsCancellationRequested && opts.Duration.TotalMilliseconds > sw.Elapsed.TotalMilliseconds)
             {
                 try
                 {
+                    await sem.WaitAsync();
                     var uri = stream.Take(cancellationToken);
-                    await job.DoWork(uri);
+                    bag.Add(job.DoWork(uri).ContinueWith(_ =>
+                    {
+                        sem.Release();
+                    }));
                 }
                 catch (Exception ex)
                 {
@@ -113,27 +114,13 @@ namespace Netling.Core
                 }
             }
 
+            await Task.WhenAll(bag);
+
             results.Enqueue(job.GetResults());
             resetEvent.Set();
         }
 
-        public Task<WorkerResult> RunCount(string name, CancellationToken cancellationToken, int count = 1, int threads = 1)
-        {
-            return RunCountImpl(name, threads, count, cancellationToken);
-        }
-
-        private Task<WorkerResult> RunCountImpl(string name, int threads, int count, CancellationToken cancellationToken)
-        {
-            return Task.Run(() =>
-            {
-                var combinedWorkerThreadResult = QueueCountThreads(threads, count, cancellationToken);
-                var workerResult = new WorkerResult(name, threads, combinedWorkerThreadResult.Elapsed);
-                workerResult.Process(combinedWorkerThreadResult);
-                return workerResult;
-            });
-        }
-
-        private CombinedWorkerThreadResult QueueCountThreads(int threads, int count, CancellationToken cancellationToken)
+        private CombinedWorkerThreadResult QueueCountThreads(CountOptions opts, CancellationToken cancellationToken)
         {
             var results = new ConcurrentQueue<WorkerThreadResult>();
             var events = new List<ManualResetEventSlim>();
@@ -144,7 +131,7 @@ namespace Netling.Core
                 var num = 0;
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    if (bc.Count < _uris.Count())
+                    if (bc.Count < _uris.Count)
                     {
                         foreach (var n in _uris.Once())
                         {
@@ -152,20 +139,20 @@ namespace Netling.Core
                         }
                         num++;
                     }
-                    if (num >= count)
+                    if (num >= opts.Count)
                     {
                         bc.CompleteAdding();
                         break;
                     }
-                    await Task.Delay(TimeSpan.FromMilliseconds(100));
+                    await Task.Delay(_uris.Frequency(opts));
                 }
             });
 
-            for (var i = 0; i < threads; i++)
+            for (var i = 0; i < opts.Threads; i++)
             {
                 var resetEvent = new ManualResetEventSlim(false);
 
-                var thread = new Thread(async (index) => await DoWork_Count(results, cancellationToken, resetEvent, (int)index, bc));
+                var thread = new Thread(async (index) => await DoWork_Count(bc, opts.Concurrency, resetEvent, results, (int)index, cancellationToken));
 
                 thread.Start(i);
                 events.Add(resetEvent);
@@ -174,18 +161,36 @@ namespace Netling.Core
             return Sink(results, events, sw);
         }
 
-        private async Task DoWork_Count(ConcurrentQueue<WorkerThreadResult> results, CancellationToken cancellationToken, ManualResetEventSlim resetEvent, int workerIndex, BlockingCollection<Uri> stream)
+        private async Task DoWork_Count(BlockingCollection<Uri> stream, int concurrency, ManualResetEventSlim resetEvent, ConcurrentQueue<WorkerThreadResult> results, int workerIndex, CancellationToken cancellationToken)
         {
+            var bag = new ConcurrentBag<Task>();
+            var sem = new SemaphoreSlim(concurrency);
             var workerThreadResult = new WorkerThreadResult();
             var job = await _workerJob.Init(workerIndex, workerThreadResult);
 
             while (!stream.IsCompleted && stream.TryTake(out var uri, -1, cancellationToken))
             {
-                await job.DoWork(uri);
+                await sem.WaitAsync();
+                bag.Add(job.DoWork(uri).ContinueWith(_ =>
+                {
+                    sem.Release();
+                }));
             }
+
+            await Task.WhenAll(bag);
 
             results.Enqueue(job.GetResults());
             resetEvent.Set();
+        }
+
+        private CombinedWorkerThreadResult Sink(ConcurrentQueue<WorkerThreadResult> results, IEnumerable<ManualResetEventSlim> events, Stopwatch sw)
+        {
+            for (var i = 0; i < events.Count(); i += 50)
+            {
+                var group = events.Skip(i).Take(50).Select(r => r.WaitHandle).ToArray();
+                WaitHandle.WaitAll(group);
+            }
+            return new CombinedWorkerThreadResult(results, sw.Elapsed);
         }
     }
 }
