@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Netling.Core;
+using Netling.Core.HttpClientWorker;
 using Netling.Core.Models;
 using Netling.Core.SocketWorker;
 
@@ -20,7 +24,6 @@ namespace Netling.Client
         private Task<WorkerResult> _task;
         private List<ResultWindow> _resultWindows;
         private ResultWindowItem _baselineResult;
-
 
         public MainWindow()
         {
@@ -49,6 +52,10 @@ namespace Netling.Client
 
             Threads.SelectedIndex = 0;
             Url.Focus();
+
+            List<PluginInfo> pluginList = PluginLoader.GetPluginList(".");
+            Plugins.ItemsSource = pluginList.Select(x => string.Format("{0} ({1})", x.TypeName, x.AssemblyShort));
+            Plugins.Tag = pluginList;
         }
 
         private async void StartButton_Click(object sender, RoutedEventArgs e)
@@ -56,9 +63,11 @@ namespace Netling.Client
             if (!_running)
             {
                 var duration = default(TimeSpan);
+                var warmup = TimeSpan.FromSeconds(0);
                 int? count = null;
                 var threads = Convert.ToInt32(((KeyValuePair<int, string>)Threads.SelectionBoxItem).Key);
                 var durationText = (string)((ComboBoxItem)Duration.SelectedItem).Content;
+                var warmupText = (string)((ComboBoxItem)Warmup.SelectedItem).Content;
                 StatusProgressbar.IsIndeterminate = false;
 
                 switch (durationText)
@@ -102,7 +111,31 @@ namespace Netling.Client
                         count = 10000;
                         StatusProgressbar.IsIndeterminate = true;
                         break;
-
+                }
+                
+                switch (warmupText)
+                {
+                    case "0 seconds":
+                        warmup = TimeSpan.FromSeconds(0);
+                        break;
+                    case "2 seconds":
+                        warmup = TimeSpan.FromSeconds(2);
+                        break;
+                    case "10 seconds":
+                        warmup = TimeSpan.FromSeconds(10);
+                        break;
+                    case "20 seconds":
+                        warmup = TimeSpan.FromSeconds(20);
+                        break;
+                    case "30 seconds":
+                        warmup = TimeSpan.FromSeconds(30);
+                        break;
+                    case "1 minute":
+                        warmup = TimeSpan.FromMinutes(1);
+                        break;
+                    case "2 minutes":
+                        warmup = TimeSpan.FromMinutes(2);
+                        break;
                 }
 
                 if (string.IsNullOrWhiteSpace(Url.Text))
@@ -111,6 +144,11 @@ namespace Netling.Client
                 }
 
                 if (!Uri.TryCreate(Url.Text.Trim(), UriKind.Absolute, out var uri))
+                {
+                    return;
+                }
+
+                if (Plugins.SelectedIndex == -1)
                 {
                     return;
                 }
@@ -127,15 +165,23 @@ namespace Netling.Client
                 StatusProgressbar.Value = 0;
                 StatusProgressbar.Visibility = Visibility.Visible;
 
-                var worker = new Worker(new SocketWorkerJob(uri));
+                List<PluginInfo> pluginList = Plugins.Tag as List<PluginInfo>;
+                PluginInfo selectedPlugin = pluginList[Plugins.SelectedIndex];
+
+                Assembly workerPluginAssembly = PluginLoader.LoadPlugin(selectedPlugin.AssemblyName);
+                var workerPlugin = PluginLoader.CreateInstance(workerPluginAssembly, selectedPlugin.TypeName);
+
+                workerPlugin.Initialize(uri);
+
+                var worker = new Worker(workerPlugin);
 
                 if (count.HasValue)
                 {
-                    _task = worker.Run(uri.ToString(), count.Value, cancellationToken);
+                    _task = worker.Run(uri.ToString(), count.Value, warmup, cancellationToken);
                 }
                 else
                 {
-                    _task = worker.Run(uri.ToString(), threads, duration, cancellationToken);
+                    _task = worker.Run(uri.ToString(), threads, duration, warmup, cancellationToken);
                 }
 
                 _task.GetAwaiter().OnCompleted(async () =>
