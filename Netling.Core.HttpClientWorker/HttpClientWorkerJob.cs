@@ -9,16 +9,25 @@ namespace Netling.Core.HttpClientWorker
     public class HttpClientWorkerJob : IWorkerJob
     {
         private readonly int _index;
-        private readonly Uri _uri;
+        private Uri _uri;
         private readonly Stopwatch _stopwatch;
         private readonly Stopwatch _localStopwatch;
         private readonly WorkerThreadResult _workerThreadResult;
         private readonly HttpClient _httpClient;
 
         // Used to approximately calculate bandwidth
-        private static readonly int MissingHeaderLength = "HTTP/1.1 200 OK\r\nContent-Length: 123\r\nContent-Type: text/plain\r\n\r\n".Length; 
+        private static readonly int MissingHeaderLength = "HTTP/1.1 200 OK\r\nContent-Length: 123\r\nContent-Type: text/plain\r\n\r\n".Length;
+
+        public HttpClientWorkerJob()
+        {
+        }
 
         public HttpClientWorkerJob(Uri uri)
+        {
+            _uri = uri;
+        }
+
+        public void Initialize(Uri uri)
         {
             _uri = uri;
         }

@@ -9,13 +9,22 @@ namespace Netling.Core.SocketWorker
     public class SocketWorkerJob : IWorkerJob
     {
         private readonly int _index;
-        private readonly Uri _uri;
+        private Uri _uri;
         private readonly Stopwatch _stopwatch;
         private readonly Stopwatch _localStopwatch;
         private readonly WorkerThreadResult _workerThreadResult;
         private readonly HttpWorker _httpWorker;
 
+        public SocketWorkerJob()
+        {
+        }
+
         public SocketWorkerJob(Uri uri)
+        {
+            _uri = uri;
+        }
+
+        public void Initialize(Uri uri)
         {
             _uri = uri;
         }

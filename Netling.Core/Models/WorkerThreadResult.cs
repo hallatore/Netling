@@ -33,6 +33,13 @@ namespace Netling.Core.Models
             }
         }
 
+        public void Clear()
+        {
+            this.Seconds.Clear();
+            this.StatusCodes.Clear();
+            this.Exceptions.Clear();
+        }
+
         private void AddOrUpdateStatusCode(int statusCode)
         {
             if (statusCode == 0)

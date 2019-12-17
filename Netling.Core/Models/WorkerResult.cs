@@ -32,6 +32,13 @@ namespace Netling.Core.Models
         public double StdDev { get; private set; }
         public double Min { get; private set; }
         public double Max { get; private set; }
+
+        public double P99 { get; private set; }
+
+        public double P95 { get; private set; }
+
+        public double P50 { get; private set; }
+
         public int[] Histogram { get; private set; }
 
         public double Bandwidth => Math.Round(BytesPrSecond * 8 / 1024 / 1024, MidpointRounding.AwayFromZero);
@@ -58,6 +65,10 @@ namespace Netling.Core.Models
             Min = responseTimes.First();
             Max = responseTimes.Last();
             Histogram = GenerateHistogram(responseTimes);
+
+            P99 = responseTimes[(int)(responseTimes.Length * 0.99)];
+            P95 = responseTimes[(int)(responseTimes.Length * 0.95)];
+            P50 = responseTimes[(int)(responseTimes.Length / 2 )];
         }
 
         private static float[] GetResponseTimes(List<List<float>> items)

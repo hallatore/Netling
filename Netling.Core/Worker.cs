@@ -18,32 +18,34 @@ namespace Netling.Core
             _workerJob = workerJob;
         }
 
-        public Task<WorkerResult> Run(string name, int threads, TimeSpan duration, CancellationToken cancellationToken)
+        public Task<WorkerResult> Run(string name, int threads, TimeSpan duration, TimeSpan warmupDuration, CancellationToken cancellationToken)
         {
-            return Run(name, threads, duration, null, cancellationToken);
+            return Run(name, threads, duration, warmupDuration, null, cancellationToken);
         }
 
-        public Task<WorkerResult> Run(string name, int count, CancellationToken cancellationToken)
+        public Task<WorkerResult> Run(string name, int count, TimeSpan warmupDuration, CancellationToken cancellationToken)
         {
-            return Run(name, 1, TimeSpan.MaxValue, count, cancellationToken);
+            return Run(name, 1, TimeSpan.MaxValue, warmupDuration, count, cancellationToken);
         }
 
-        private Task<WorkerResult> Run(string name, int threads, TimeSpan duration, int? count, CancellationToken cancellationToken)
+        private Task<WorkerResult> Run(string name, int threads, TimeSpan duration, TimeSpan warmupDuration, int? count, CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {
-                var combinedWorkerThreadResult = QueueWorkerThreads(threads, duration, count, cancellationToken);
+                var combinedWorkerThreadResult = QueueWorkerThreads(threads, duration, warmupDuration, count, cancellationToken);
                 var workerResult = new WorkerResult(name, threads, combinedWorkerThreadResult.Elapsed);
                 workerResult.Process(combinedWorkerThreadResult);
                 return workerResult;
             });
         }
 
-        private CombinedWorkerThreadResult QueueWorkerThreads(int threads, TimeSpan duration, int? count, CancellationToken cancellationToken)
+        private CombinedWorkerThreadResult QueueWorkerThreads(int threads, TimeSpan duration, TimeSpan warmupDuration, int? count, CancellationToken cancellationToken)
         {
             var results = new ConcurrentQueue<WorkerThreadResult>();
             var events = new List<ManualResetEventSlim>();
             var sw = Stopwatch.StartNew();
+
+            var startWorkEvent = new ManualResetEventSlim(false);
 
             for (var i = 0; i < threads; i++)
             {
@@ -53,16 +55,24 @@ namespace Netling.Core
 
                 if (count.HasValue)
                 {
-                    thread = new Thread(async (index) => await DoWork_Count(count.Value, results, cancellationToken, resetEvent, (int)index));
+                    thread = new Thread(async (index) => await DoWork_Count(count.Value, results, warmupDuration, sw, cancellationToken, startWorkEvent, resetEvent, (int)index));
                 }
                 else
                 {
-                    thread = new Thread(async (index) => await DoWork_Duration(duration, sw, results, cancellationToken, resetEvent, (int)index));
+                    thread = new Thread(async (index) => await DoWork_Duration(duration, warmupDuration, sw, results, cancellationToken, startWorkEvent, resetEvent, (int)index));
                 }
 
                 thread.Start(i);
                 events.Add(resetEvent);
+
+                Thread.Sleep(100);
             }
+
+            sw.Restart();
+
+            // start the work on all threads
+            startWorkEvent.Set();
+
 
             for (var i = 0; i < events.Count; i += 50)
             {
@@ -70,10 +80,18 @@ namespace Netling.Core
                 WaitHandle.WaitAll(group);
             }
 
-            return new CombinedWorkerThreadResult(results, sw.Elapsed);
+            return new CombinedWorkerThreadResult(results, sw.Elapsed - warmupDuration);
         }
 
-        private async Task DoWork_Duration(TimeSpan duration, Stopwatch sw, ConcurrentQueue<WorkerThreadResult> results, CancellationToken cancellationToken, ManualResetEventSlim resetEvent, int workerIndex)
+        private async Task DoWork_Duration(
+            TimeSpan duration, 
+            TimeSpan warmupDuration, 
+            Stopwatch sw, 
+            ConcurrentQueue<WorkerThreadResult> results, 
+            CancellationToken cancellationToken,
+            ManualResetEventSlim startWorkEvent,
+            ManualResetEventSlim resetEvent, 
+            int workerIndex)
         {
             IWorkerJob job;
             var workerThreadResult = new WorkerThreadResult();
@@ -81,6 +99,7 @@ namespace Netling.Core
             try
             {
                 job = await _workerJob.Init(workerIndex, workerThreadResult);
+                await job.DoWork();
             }
             catch (Exception ex)
             {
@@ -90,7 +109,10 @@ namespace Netling.Core
                 return;
             }
 
-            while (!cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.Elapsed.TotalMilliseconds)
+            startWorkEvent.Wait();
+
+            // warmup phase
+            while (!cancellationToken.IsCancellationRequested && warmupDuration.TotalMilliseconds > sw.Elapsed.TotalMilliseconds)
             {
                 try
                 {
@@ -101,16 +123,70 @@ namespace Netling.Core
                     workerThreadResult.AddError((int)sw.ElapsedMilliseconds / 1000, 0, 0, false, ex);
                 }
             }
-            
+
+            workerThreadResult.Clear();
+
+            // main phase
+            while (!cancellationToken.IsCancellationRequested && (duration.TotalMilliseconds + warmupDuration .TotalMilliseconds)> sw.Elapsed.TotalMilliseconds)
+            {
+                try
+                {
+                    await job.DoWork();
+                }
+                catch (Exception ex)
+                {
+                    workerThreadResult.AddError((int)sw.ElapsedMilliseconds / 1000, 0, 0, false, ex);
+                }
+            }
+
             results.Enqueue(job.GetResults());
             resetEvent.Set();
         }
 
-        private async Task DoWork_Count(int count, ConcurrentQueue<WorkerThreadResult> results, CancellationToken cancellationToken, ManualResetEventSlim resetEvent, int workerIndex)
+        private async Task DoWork_Count(
+            int count, 
+            ConcurrentQueue<WorkerThreadResult> results, 
+            TimeSpan warmupDuration, 
+            Stopwatch sw, 
+            CancellationToken cancellationToken,
+            ManualResetEventSlim startWorkEvent,
+            ManualResetEventSlim resetEvent, 
+            int workerIndex)
         {
             var workerThreadResult = new WorkerThreadResult();
-            var job = await _workerJob.Init(workerIndex, workerThreadResult);
+            IWorkerJob job;
 
+            try
+            {
+                job = await _workerJob.Init(workerIndex, workerThreadResult);
+                await job.DoWork();
+            }
+            catch (Exception ex)
+            {
+                workerThreadResult.AddError((int)sw.ElapsedMilliseconds / 1000, 0, 0, false, ex);
+                results.Enqueue(workerThreadResult);
+                resetEvent.Set();
+                return;
+            }
+
+            startWorkEvent.Wait();
+
+            // warmup phase
+            while (!cancellationToken.IsCancellationRequested && warmupDuration.TotalMilliseconds > sw.Elapsed.TotalMilliseconds)
+            {
+                try
+                {
+                    await job.DoWork();
+                }
+                catch (Exception ex)
+                {
+                    workerThreadResult.AddError((int)sw.ElapsedMilliseconds / 1000, 0, 0, false, ex);
+                }
+            }
+
+            workerThreadResult.Clear();
+
+            // main phase
             for (var i = 0; i < count && !cancellationToken.IsCancellationRequested; i++)
             {
                 await job.DoWork();
