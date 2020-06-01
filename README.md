@@ -5,7 +5,7 @@ Netling is a load tester client for easy web testing. It is extremely fast while
 
 ## Usage
 
-The base source is meant to support most scenarios. You can use the wpf client, console client or integrate netling.core into your custom solution.
+The base source is meant to support most scenarios. You can use the WPF client, console client or integrate Netling.Core into your custom solution.
 
 Need custom headers, data, etc? Fork and tweak it to your needs! :)
 
