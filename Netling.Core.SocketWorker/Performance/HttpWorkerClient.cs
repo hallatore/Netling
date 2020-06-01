@@ -52,12 +52,12 @@ namespace Netling.Core.SocketWorker.Performance
                 return _client.GetStream();
             }
 
-            var stream = new SslStream(_client.GetStream());
+            var stream = new SslStream(_client.GetStream(), false, (sender, certificate, chain, sslpolicyerrors) => true);
             var xc = new X509Certificate2Collection();
             stream.AuthenticateAsClient(uri.Host, xc, SslProtocols.Tls12, false);
             return stream;
         }
-        
+
         public void Write(ReadOnlySpan<byte> buffer)
         {
             CheckInit();
