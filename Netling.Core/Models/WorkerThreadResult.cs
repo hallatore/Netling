@@ -9,6 +9,9 @@ namespace Netling.Core.Models
         public Dictionary<int, int> StatusCodes { get; set; }
         public Dictionary<Type,Exception> Exceptions { get; set; }
 
+        private Second _tmpSeconds;
+        private int _tmpElapsedSeconds = -1;
+
         public WorkerThreadResult()
         {
             Seconds = new Dictionary<int, Second>();
@@ -16,16 +19,23 @@ namespace Netling.Core.Models
             Exceptions = new Dictionary<Type, Exception>();
         }
 
-        public void Add(int elapsedSeconds, long bytes, float responsetime, int statusCode, bool trackResponseTime)
+        public void Add(int elapsedSeconds, long bytes, float responseTime, int statusCode, bool trackResponseTime)
         {
             AddOrUpdateStatusCode(statusCode);
-            GetItem(elapsedSeconds).Add(bytes, responsetime, trackResponseTime);
+
+            if (_tmpElapsedSeconds != elapsedSeconds)
+            {
+                _tmpSeconds = GetCurrentSecond(elapsedSeconds);
+                _tmpElapsedSeconds = elapsedSeconds;
+            }
+                
+            _tmpSeconds.Add(bytes, responseTime, trackResponseTime);
         }
 
-        public void AddError(int elapsedSeconds, float responsetime, int statusCode, bool trackResponseTime, Exception exception = null)
+        public void AddError(int elapsedSeconds, float responseTime, int statusCode, bool trackResponseTime, Exception exception = null)
         {
             AddOrUpdateStatusCode(statusCode);
-            GetItem(elapsedSeconds).AddError(responsetime, trackResponseTime);
+            GetCurrentSecond(elapsedSeconds).AddError(responseTime, trackResponseTime);
 
             if (exception != null && !Exceptions.ContainsKey(exception.GetType()))
             {
@@ -48,7 +58,7 @@ namespace Netling.Core.Models
             StatusCodes[statusCode]++;
         }
 
-        private Second GetItem(int elapsedSeconds)
+        private Second GetCurrentSecond(int elapsedSeconds)
         {
             if (Seconds.ContainsKey(elapsedSeconds))
             {

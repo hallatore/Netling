@@ -19,7 +19,10 @@ namespace Netling.Client
                 Median = result.Median,
                 StdDev = result.StdDev,
                 Min = result.Min,
-                Max = result.Max
+                Max = result.Max,
+                P99 = result.P99,
+                P95 = result.P95,
+                P50 = result.P50
             };
         }
 
@@ -30,6 +33,9 @@ namespace Netling.Client
         public double ElapsedSeconds { get; set; }
         public double JobsPerSecond { get; set; }
         public double Max { get; set; }
+        public double P99 { get; set; }
+        public double P95 { get; set; }
+        public double P50 { get; set; }
         public double Min { get; set; }
         public double StdDev { get; set; }
         public double Median { get; set; }
