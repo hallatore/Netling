@@ -83,18 +83,18 @@ namespace Netling.Core.Models
             return result;
         }
 
-        private int[] GenerateHistogram(float[] responeTimes)
+        private int[] GenerateHistogram(float[] responseTimes)
         {
             var splits = 80;
             var result = new int[splits];
 
-            if (responeTimes == null || responeTimes.Length < 2)
+            if (responseTimes == null || responseTimes.Length < 2)
             {
                 return result;
             }
 
-            var max = responeTimes.Last();
-            var min = responeTimes.First();
+            var max = responseTimes.Last();
+            var min = responseTimes.First();
             var divider = (max - min) / splits;
             var step = min;
             var y = 0;
@@ -109,7 +109,7 @@ namespace Netling.Core.Models
                     stepMax = float.MaxValue;
                 }
 
-                while (y < responeTimes.Length && responeTimes[y] < stepMax)
+                while (y < responseTimes.Length && responseTimes[y] < stepMax)
                 {
                     y++;
                     count++;
