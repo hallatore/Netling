@@ -1,9 +1,15 @@
 ﻿<Application x:Class="Netling.Client.App"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             StartupUri="MainWindow.xaml">
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Application.Styles>
+        <FluentTheme Mode="Light" />
+        <!-- Add the line below to get OxyPlot UI theme applied. -->
+        <StyleInclude Source="resm:OxyPlot.Avalonia.Themes.Default.xaml?assembly=OxyPlot.Avalonia" />
+
+    </Application.Styles>
+
     <Application.Resources>
-        <VisualBrush x:Key="RedBrush" TileMode="Tile" Viewport="0,0,8,8" ViewportUnits="Absolute" Viewbox="0,0,8,8" ViewboxUnits="Absolute">
+        <VisualBrush x:Key="RedBrush" TileMode="Tile">
             <VisualBrush.Visual>
                 <Grid Background="Red">
                     <Path Data="M 0 8 L 8 0" Stroke="White" StrokeThickness="1" />

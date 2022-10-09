@@ -1,8 +1,10 @@
-﻿<Window x:Class="Netling.Client.ResultWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:client="clr-namespace:Netling.Client"
-        Title="Netling" Height="550" Width="650" WindowStyle="SingleBorderWindow" ResizeMode="NoResize">
+﻿<Window   x:Class="Netling.Client.ResultWindow"
+          xmlns="https://github.com/avaloniaui"
+          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+          xmlns:client="clr-namespace:Netling.Client"
+          Title="Netling" Height="550" Width="650" SystemDecorations="Full" CanResize="False">
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -47,7 +49,7 @@
             <TabItem Header="REQUEST THROUGHPUT" FontSize="11">
                 <client:LineGraphControl Margin="-9,0,0,0" x:Name="RequestsPerSecondGraph"/>
             </TabItem>
-            <TabItem Header="STATUS CODES" FontSize="11" x:Name="StatusCodesTab" Visibility="Collapsed">
+            <TabItem Header="STATUS CODES" FontSize="11" x:Name="StatusCodesTab" IsVisible="False">
                 <ListBox BorderThickness="0" Padding="5" x:Name="StatusCodesListBox" IsEnabled="False">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
@@ -63,8 +65,8 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
             </TabItem>
-            <TabItem Header="EXCEPTIONS" FontSize="11" x:Name="ExceptionsTab" Visibility="Collapsed">
-                <TextBox IsReadOnly="True" BorderThickness="0" Padding="5" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" x:Name="ExceptionsTextBox"/>
+            <TabItem Header="EXCEPTIONS" FontSize="11" x:Name="ExceptionsTab" IsVisible="False">
+                <TextBox IsReadOnly="True" BorderThickness="0" Padding="5" TextWrapping="Wrap"  x:Name="ExceptionsTextBox"/>
             </TabItem>
         </TabControl>
     </Grid>
