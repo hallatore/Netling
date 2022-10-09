@@ -1,26 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Netling.Core;
 using Netling.Core.Models;
 using Netling.Core.SocketWorker;
+using Netling.Core.SocketWorker.Performance;
 
 namespace Netling.Client
 {
-    public partial class MainWindow
+    public partial class MainWindow : Window
     {
         private bool _running;
         private CancellationTokenSource _cancellationTokenSource;
         private Task<WorkerResult> _task;
-        private List<ResultWindow> _resultWindows;
+        private readonly List<ResultWindow> _resultWindows;
         private ResultWindowItem _baselineResult;
 
+        private readonly IList<KeyValuePair<int, string>> _threadItems = new List<KeyValuePair<int, string>>();
 
         public MainWindow()
         {
@@ -29,24 +35,26 @@ namespace Netling.Client
             Thread.CurrentThread.CurrentUICulture = new CultureInfo("en");
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en");
             Thread.CurrentThread.CurrentCulture.NumberFormat.NumberGroupSeparator = " ";
-            Loaded += OnLoaded;
+            Opened += OnLoaded;
+
+#if DEBUG
+            this.AttachDevTools();
+#endif
         }
 
-        private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
+        private void OnLoaded(object sender, EventArgs routedEventArgs)
         {
-            Threads.SelectedValuePath = "Key";
-            Threads.DisplayMemberPath = "Value";
-
             for (var i = 1; i <= Environment.ProcessorCount; i++)
             {
-                Threads.Items.Add(new KeyValuePair<int, string>(i, i.ToString()));
+                _threadItems.Add(new KeyValuePair<int, string>(i, i.ToString()));
             }
 
             for (var i = 2; i <= 20; i++)
             {
-                Threads.Items.Add(new KeyValuePair<int, string>(Environment.ProcessorCount * i, $"{Environment.ProcessorCount * i} - ({i} per core)"));
+                _threadItems.Add(new KeyValuePair<int, string>(Environment.ProcessorCount * i, $"{Environment.ProcessorCount * i} - ({i} per core)"));
             }
 
+            Threads.Items = _threadItems;
             Threads.SelectedIndex = 0;
             Url.Focus();
         }
@@ -57,8 +65,8 @@ namespace Netling.Client
             {
                 var duration = default(TimeSpan);
                 int? count = null;
-                var threads = Convert.ToInt32(((KeyValuePair<int, string>)Threads.SelectionBoxItem).Key);
-                var durationText = (string)((ComboBoxItem)Duration.SelectedItem).Content;
+                var threads = Convert.ToInt32(((KeyValuePair<int, string>)Threads.SelectedItem).Key);
+                var durationText = (string)((ComboBoxItem)Duration.SelectedItem)?.Content ?? "10 seconds";
                 StatusProgressbar.IsIndeterminate = false;
 
                 switch (durationText)
@@ -102,7 +110,6 @@ namespace Netling.Client
                         count = 10000;
                         StatusProgressbar.IsIndeterminate = true;
                         break;
-
                 }
 
                 if (string.IsNullOrWhiteSpace(Url.Text))
@@ -125,7 +132,7 @@ namespace Netling.Client
                 var cancellationToken = _cancellationTokenSource.Token;
 
                 StatusProgressbar.Value = 0;
-                StatusProgressbar.Visibility = Visibility.Visible;
+                StatusProgressbar.IsVisible = true;
 
                 var worker = new Worker(new SocketWorkerJob(uri));
 
@@ -138,10 +145,7 @@ namespace Netling.Client
                     _task = worker.Run(uri.ToString(), threads, duration, cancellationToken);
                 }
 
-                _task.GetAwaiter().OnCompleted(async () =>
-                {
-                    await JobCompleted();
-                });
+                _task.GetAwaiter().OnCompleted(async () => { await JobCompleted(); });
 
                 if (StatusProgressbar.IsIndeterminate)
                 {
@@ -152,7 +156,7 @@ namespace Netling.Client
 
                 while (!cancellationToken.IsCancellationRequested && duration.TotalMilliseconds > sw.Elapsed.TotalMilliseconds)
                 {
-                    await Task.Delay(500);
+                    await Task.Delay(500, cancellationToken);
                     StatusProgressbar.Value = 100.0 / duration.TotalMilliseconds * sw.Elapsed.TotalMilliseconds;
                 }
 
@@ -166,7 +170,7 @@ namespace Netling.Client
             }
             else
             {
-                if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
+                if (!_cancellationTokenSource.IsCancellationRequested)
                 {
                     _cancellationTokenSource.Cancel();
                 }
@@ -186,7 +190,7 @@ namespace Netling.Client
 
         private async Task JobCompleted()
         {
-            if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
+            if (!_cancellationTokenSource.IsCancellationRequested)
             {
                 _cancellationTokenSource.Cancel();
             }
@@ -204,7 +208,7 @@ namespace Netling.Client
             await result.Load(_task.Result, _baselineResult);
             result.Show();
             _task = null;
-            StatusProgressbar.Visibility = Visibility.Hidden;
+            StatusProgressbar.IsVisible = false;
             StartButton.IsEnabled = true;
             StartButton.Content = "Run";
         }

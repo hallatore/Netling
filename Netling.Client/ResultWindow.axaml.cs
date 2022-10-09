@@ -2,22 +2,37 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Netling.Core.Models;
 using OxyPlot;
 
 namespace Netling.Client
 {
-    public partial class ResultWindow
+    public partial class ResultWindow : Window
     {
         private ResultWindowItem _resultWindowItem;
         private readonly MainWindow _sender;
 
+        public ResultWindow()
+        {
+            InitializeComponent(true);
+#if DEBUG
+            this.AttachDevTools();
+#endif
+        }
+
         public ResultWindow(MainWindow sender)
         {
             _sender = sender;
-            InitializeComponent();
+            InitializeComponent(true);
+#if DEBUG
+            this.AttachDevTools();
+#endif
         }
+
+
 
         public async Task Load(WorkerResult workerResult, ResultWindowItem baselineResult)
         {
@@ -44,14 +59,14 @@ namespace Netling.Client
 
             if (workerResult.StatusCodes.Any(s => s.Key != 200))
             {
-                StatusCodesTab.Visibility = Visibility.Visible;
-                StatusCodesListBox.ItemsSource = workerResult.StatusCodes
-                    .Select(s => new 
-                    {
-                        Name = $"{s.Key} - {(s.Key > 0 ? ((System.Net.HttpStatusCode)s.Key).ToString() : "")}",
-                        Count = s.Value
-                    })
-                    .ToList();
+                StatusCodesTab.IsVisible = true;
+                StatusCodesListBox.Items = workerResult.StatusCodes
+                                                       .Select(s => new
+                                                                    {
+                                                                        Name = $"{s.Key} - {(s.Key > 0 ? ((System.Net.HttpStatusCode)s.Key).ToString() : "")}",
+                                                                        Count = s.Value
+                                                                    })
+                                                       .ToList();
 
                 if (!workerResult.Exceptions.Any())
                 {
@@ -61,7 +76,7 @@ namespace Netling.Client
 
             if (workerResult.Exceptions.Any())
             {
-                ExceptionsTab.Visibility = Visibility.Visible;
+                ExceptionsTab.IsVisible = true;
                 ExceptionsTextBox.Text = string.Join("\r\n\r\n----\r\n\r\n", workerResult.Exceptions.Select(e => e.ToString()));
                 ExceptionsTab.Focus();
             }
@@ -75,21 +90,21 @@ namespace Netling.Client
         private Task<JobTaskResult> GenerateAsync(WorkerResult workerResult)
         {
             return Task.Run(() =>
-            {
-                var result = ResultWindowItem.Parse(workerResult);
-                var max = (int) Math.Floor(workerResult.Elapsed.TotalMilliseconds / 1000);
+                            {
+                                var result = ResultWindowItem.Parse(workerResult);
+                                var max = (int)Math.Floor(workerResult.Elapsed.TotalMilliseconds / 1000);
 
-                var throughput = workerResult.Seconds
-                    .Where(r => r.Key < max && r.Value.Count > 0)
-                    .OrderBy(r => r.Key)
-                    .Select(r => new DataPoint(r.Key, r.Value.Count));
+                                var throughput = workerResult.Seconds
+                                                             .Where(r => r.Key < max && r.Value.Count > 0)
+                                                             .OrderBy(r => r.Key)
+                                                             .Select(r => new DataPoint(r.Key, r.Value.Count));
 
-                return new JobTaskResult
-                {
-                    ResultWindowItem = result,
-                    Throughput = throughput
-                };
-            });
+                                return new JobTaskResult
+                                       {
+                                           ResultWindowItem = result,
+                                           Throughput = throughput
+                                       };
+                            });
         }
 
         private void UseBaseline(object sender, RoutedEventArgs e)
