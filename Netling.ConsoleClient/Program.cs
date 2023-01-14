@@ -20,12 +20,14 @@ namespace Netling.ConsoleClient
             var threads = 1;
             var duration = 10;
             int? count = null;
+            int rampUps = 1;
 
             var p = new OptionSet()
             {
                 {"t|threads=", (int v) => threads = v},
                 {"d|duration=", (int v) => duration = v},
-                {"c|count=", (int? v) => count = v}
+                {"c|count=", (int? v) => count = v},
+                {"r|rampups=", (int v) => rampUps= v}
             };
 
             var extraArgs = p.Parse(args);
@@ -39,6 +41,10 @@ namespace Netling.ConsoleClient
             else if (url != null && count.HasValue)
             {
                 RunWithCount(uri, count.Value).Wait();
+            }
+            else if (rampUps > 1)
+            {
+                RunWithRampingUp(uri, threads, TimeSpan.FromSeconds(duration), rampUps).Wait();
             }
             else if (url != null)
             {
@@ -67,7 +73,53 @@ namespace Netling.ConsoleClient
             return Run(uri, threads, duration, null);
         }
 
-        private static async Task Run(Uri uri, int threads, TimeSpan duration, int? count)
+        private static async Task RunWithRampingUp(Uri uri, int threads, TimeSpan duration, int rampUps)
+        {
+            var bestResult = new WorkerResult("", 0, TimeSpan.MaxValue);
+            var notRampedUpCount = 0;
+
+            for (int iteration = 0; iteration < rampUps; iteration++)
+            {
+                Console.WriteLine(StartRunWithDurationString, duration.TotalSeconds, uri, threads);
+                var result = await Run(uri, threads, duration, null);
+                if (iteration == 0)
+                    bestResult = result;
+
+                if (result.RequestsPerSecond >= bestResult.RequestsPerSecond && result.Errors <= bestResult.Errors)
+                {
+                    bestResult = result;
+                    threads++;
+                    notRampedUpCount = 0;
+                }
+                else
+                {
+                    notRampedUpCount++;
+                }
+
+                if (notRampedUpCount == 3)
+                {
+                    Console.WriteLine("Unable to increase threads without reducing req/sec or increasing errors after 3 attempts - stopping test");
+                    break;
+                }
+            }
+
+            if (rampUps > 1)
+            {
+                Console.WriteLine(ResultString,
+                    $"Ramp Up identified the following as the best result with {threads} threads\n{bestResult.Count}",
+                    bestResult.Elapsed.TotalSeconds,
+                    bestResult.RequestsPerSecond,
+                    bestResult.Bandwidth,
+                    bestResult.Errors,
+                    bestResult.Median,
+                    bestResult.StdDev,
+                    bestResult.Min,
+                    bestResult.Max,
+                    GetAsciiHistogram(bestResult));
+            }
+        }
+
+        private static async Task<WorkerResult> Run(Uri uri, int threads, TimeSpan duration, int? count)
         {
             WorkerResult result;
             var worker = new Worker(new SocketWorkerJob(uri));
@@ -92,6 +144,7 @@ namespace Netling.ConsoleClient
                 result.Min,
                 result.Max,
                 GetAsciiHistogram(result));
+            return result;
         }
 
         private static string GetAsciiHistogram(WorkerResult workerResult)
@@ -128,11 +181,13 @@ Options:
     -t count        Number of threads to spawn.
     -d count        Duration of the run in seconds.
     -c count        Amount of requests to send on a single thread.
+    -r rampups      How many times to repeat the test while trying to increase the number of threads
 
 Examples:
     netling http://localhost:5000/
     netling http://localhost:5000/ -t 8 -d 60
     netling http://localhost:5000/ -c 3000
+    netling http://localhost:5000/ -t 8 -d 60 -r 10
 ";
 
         private const string StartRunWithCountString = @"
